@@ -41,7 +41,7 @@ class DT5550:
         """
 
         err = 0
- 
+
         event = self.fin.read(CHUNK_SIZE)
         if not event:
             self.fin.close()
@@ -49,6 +49,7 @@ class DT5550:
             return err
 
         self.n_event = self.n_event+1
+
 
         for idet in range(N_DETECTOR):
             ioff = idet * CHANNEL_SIZE
