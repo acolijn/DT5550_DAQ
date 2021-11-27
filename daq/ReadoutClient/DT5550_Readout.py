@@ -140,7 +140,7 @@ def read_data(filename, N_Total_Events, handle):
 
                     if N_Read_Events >= N_Total_Events:
                         break
-
+ 
                 print("Total Acquired Events: ", N_Read_Events)
         else:
             print("Status Error")
