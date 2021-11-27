@@ -7,13 +7,12 @@ import numba
 #
 CHUNK_SIZE = 72 # bytes
 CHANNEL_SIZE = 8 # bytes per channel
-N_DETECTOR = 8 # number of detectors
+N_DETECTOR = 8# number of detectors
 
 class DT5550:
     """
     DT5550 class to handle binary data
     """
-
     def __init__(self, **kwargs):
         """
         Initialize.....
