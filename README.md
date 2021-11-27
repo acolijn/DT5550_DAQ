@@ -1,5 +1,4 @@
 # FineStructure
-Finestructure Constant lab setup
 
 Software to control, readout and analyze a lab setup to measure the fine-structure constant. The DAQ unit is a DT5550+DT5550AFE unit from CAEN and firmware code 
 has been developed in the SciCompiler development suite
