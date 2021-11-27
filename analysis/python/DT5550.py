@@ -41,7 +41,7 @@ class DT5550:
         """
 
         err = 0
-
+ 
         event = self.fin.read(CHUNK_SIZE)
         if not event:
             self.fin.close()
