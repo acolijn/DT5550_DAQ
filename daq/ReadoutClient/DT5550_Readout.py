@@ -1,15 +1,26 @@
 from DT5550_Functions import *
 import sys, getopt, time
+import json
 
 # number of bytes per event
 EVENT_LENGTH = 18
 
-def set_registers(handle):
+def set_registers(handle, config_file):
+
+    # read configuration from the config_file file
+    if config_file == "":
+        # not defined then read default....
+        config_file = 'config.json'
+
+    f = open(config_file,'r')
+    data = json.load(f)
+    f.close()
+    # get the registers from teh config file
+    reg = data['registers']
 
     # DC offset for the single-ended to differential converter
     # bottom row of DT5550AFE
-    V_offset = 1.0
-
+    V_offset = reg['V_offset']
     DAC_offset = int(1024 * V_offset + 2048)
     SetAFEBaseAddress(handle)
     err = SetAFEOffset(0, DAC_offset, handle)
@@ -17,21 +28,21 @@ def set_registers(handle):
     err = SetAFEOffset(1, DAC_offset, handle)
 
     # set the GAIN
-    err = REG_GAIN_SET(1250, handle)
+    err = REG_GAIN_SET(reg['GAIN'], handle)
     # set the Integration time
-    err = REG_INTTIME_SET(200, handle)
+    err = REG_INTTIME_SET(reg['INTTIME'], handle)
     # set the pre-integration time
-    err = REG_PREINT_SET(15, handle)
+    err = REG_PREINT_SET(reg['PREINIT'], handle)
     # set the detection threshold (derivative trigger)
-    err = REG_THRS_SET(100, handle)
+    err = REG_THRS_SET(reg['THRS'], handle)
     # set the baseline length: 2^n, where n is the value entered
-    err = REG_BLLEN_SET(6, handle)
+    err = REG_BLLEN_SET(reg['BLLEN'], handle)
     # set the baseline hold time
-    err = REG_BLHOLD_SET(150, handle)
+    err = REG_BLHOLD_SET(reg['BHOLD'], handle)
     # set the event window lenggth
-    err = REG_WINDOW_SET(300, handle)
+    err = REG_WINDOW_SET(reg['WINDOW'], handle)
     # do we invert the AI or not
-    err = REG_INVERT_SET(1, handle)
+    err = REG_INVERT_SET(reg['INVERT'], handle)
 
     return
 #-----------------------------------------------------------------------------------------------------------------------
@@ -59,8 +70,7 @@ def initialize_daq():
         print("Connection Error")
         return -1
 
-    # set teh registers on the DAQ
-    set_registers(handle)
+
 
     return handle
 #-----------------------------------------------------------------------------------------------------------------------
@@ -78,7 +88,7 @@ def read_data(filename, N_Total_Events, handle):
     N_Read_Events = 0
 
     # open output file
-    f = open(filename,'wb')
+    BinaryDataFile = open(filename,'wb')
 
     if (CPACK_CP_0_RESET(handle) != 0):
         print("Reset Error!")
@@ -118,7 +128,7 @@ def read_data(filename, N_Total_Events, handle):
                             if j+index >= frame_length:
                                 break
                             # write data to output file
-                            f.write(Frame_Data[j+index].to_bytes(4,byteorder='little'))
+                            BinaryDataFile.write(Frame_Data[j+index].to_bytes(4,byteorder='little'))
 
                         index = index + EVENT_LENGTH
                         N_Read_Events = N_Read_Events+1
@@ -138,7 +148,7 @@ def read_data(filename, N_Total_Events, handle):
         print("Start Error")
 
     # close output file
-    f.close()
+    BinaryDataFile.close()
 
     # close the connection to the board
     if CloseConnect(handle) == 0:
@@ -154,25 +164,30 @@ def main(argv):
     """
     # process command line arguments
     output_file = ''
+    config_file = ''
     n_event = 0
 
     try:
-        opts, args = getopt.getopt(argv,"hn:o:",["nevent=","ofile="])
+        opts, args = getopt.getopt(argv,"hn:o:c",["nevent=","ofile=","cfile="])
     except getopt.GetoptError:
-        print('DT5550_Readout.py -n <number of events> -o <outputfile>')
+        print('DT5550_Readout.py -n <number of events> -o <outputfile> -c <configfile>')
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == '-h':
-            print('DT5550_Readout.py -n <number of events> -o <outputfile>')
+            print('DT5550_Readout.py -n <number of events> -o <outputfile> -c <configfile>')
             sys.exit(2)
         elif opt in ("-o", "--ofile"):
             output_file = arg
+        elif opt in ("-c", "--cfile"):
+            config_file = arg
         elif opt in ("-n", "--nevent"):
             n_event = int(arg)
 
     # initialize daq
     handle = initialize_daq()
+    # set the registers on the DAQ
+    set_registers(handle, config_file)
     # start readout
     if handle != -1:
         # read data

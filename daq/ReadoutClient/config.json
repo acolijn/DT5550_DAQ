@@ -1,0 +1,14 @@
+{
+  "version": "Rev.A",
+  "registers": {
+    "V_offset": "1.0",
+    "GAIN": 1250,
+    "INTTIME": 200,
+    "PREINIT": 15,
+    "THRS": 100,
+    "BLLEN": 6,
+    "BLHOLD": 150,
+    "WINDOW": 300,
+    "INVERT": 1
+  }
+}
