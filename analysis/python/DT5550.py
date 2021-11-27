@@ -29,8 +29,11 @@ class DT5550:
         self.times = [dict() for x in range(N_DETECTOR)]
         self.t_binwidth = 1
 
+        # event structure
         self.t = np.zeros(N_DETECTOR)
         self.Q = np.zeros(N_DETECTOR)
+        self.valid = np.zeros(N_DETECTOR)
+
         self.n_event = 0
 
         return
@@ -41,7 +44,6 @@ class DT5550:
         """
 
         err = 0
-
         event = self.fin.read(CHUNK_SIZE)
         if not event:
             self.fin.close()
@@ -50,31 +52,37 @@ class DT5550:
 
         self.n_event = self.n_event+1
 
-
         for idet in range(N_DETECTOR):
             ioff = idet * CHANNEL_SIZE
 
+            # decode time
             i0 = 8 + ioff
             i1 = 12 + ioff
+
             self.t[idet] = int.from_bytes(event[i0:i1], byteorder='little')
 
-            #
-            # histogramming of charge
-            #
+            # histogramming time
             binname = int(np.floor(self.t[idet] / self.t_binwidth) * self.t_binwidth)
             if binname not in self.times[idet]:
                 self.times[idet][binname] = 0
             self.times[idet][binname] += 1
 
+            # decode charge
             i0 = 12 + ioff
             i1 = 14 + ioff
-            # print('idet', idet,' ',event[i0:i1])
             self.Q[idet] = int.from_bytes(event[i0:i1], byteorder='little')
 
+            # dictonary with charge
             binname = int(np.floor(self.Q[idet] / self.Q_binwidth) * self.Q_binwidth)
             if binname not in self.charges[idet]:
                 self.charges[idet][binname] = 0
             self.charges[idet][binname] += 1
+
+            # decode valid bit
+            i0 = 15 + ioff
+            i1 = 16 + ioff
+            ival = (int.from_bytes(event[i0:i1],byteorder='little') & 0xa0)>>7
+            self.valid[idet] = ival
 
         return err
     
