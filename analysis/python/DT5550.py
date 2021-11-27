@@ -54,6 +54,12 @@ class DT5550:
 
         for idet in range(N_DETECTOR):
             ioff = idet * CHANNEL_SIZE
+            
+            # decode valid bit
+            i0 = 15 + ioff
+            i1 = 16 + ioff
+            ival = (int.from_bytes(event[i0:i1],byteorder='little') & 0xa0)>>7
+            self.valid[idet] = ival
 
             # decode time
             i0 = 8 + ioff
@@ -62,10 +68,11 @@ class DT5550:
             self.t[idet] = int.from_bytes(event[i0:i1], byteorder='little')
 
             # histogramming time
-            binname = int(np.floor(self.t[idet] / self.t_binwidth) * self.t_binwidth)
-            if binname not in self.times[idet]:
-                self.times[idet][binname] = 0
-            self.times[idet][binname] += 1
+            if ival:
+                binname = int(np.floor(self.t[idet] / self.t_binwidth) * self.t_binwidth)
+                if binname not in self.times[idet]:
+                    self.times[idet][binname] = 0
+                self.times[idet][binname] += 1
 
             # decode charge
             i0 = 12 + ioff
@@ -73,20 +80,17 @@ class DT5550:
             self.Q[idet] = int.from_bytes(event[i0:i1], byteorder='little')
 
             # dictonary with charge
-            binname = int(np.floor(self.Q[idet] / self.Q_binwidth) * self.Q_binwidth)
-            if binname not in self.charges[idet]:
-                self.charges[idet][binname] = 0
-            self.charges[idet][binname] += 1
+            if ival:
+                binname = int(np.floor(self.Q[idet] / self.Q_binwidth) * self.Q_binwidth)
+                if binname not in self.charges[idet]:
+                    self.charges[idet][binname] = 0
+                self.charges[idet][binname] += 1
 
-            # decode valid bit
-            i0 = 15 + ioff
-            i1 = 16 + ioff
-            ival = (int.from_bytes(event[i0:i1],byteorder='little') & 0xa0)>>7
-            self.valid[idet] = ival
+
 
         return err
     
-    def plot_time(self, idet):
+    def plot_time(self, idet, bins, plot_range):
         """
         Plot the charge
         
@@ -95,12 +99,14 @@ class DT5550:
         
         mylist = [key for key, val in self.times[idet].items() for _ in range(val)]
 
-        plt.hist(mylist,bins=100)
+        plt.hist(mylist,bins=bins, range=plot_range)
+        plt.title("id ="+str(idet),x=0.9,y=0.85)
+
         plt.xlabel('time (CLK)')
 
         return
     
-    def plot_charge(self, idet):
+    def plot_charge(self, idet, bins, plot_range):
         """
         Plot the charge
         
@@ -109,10 +115,37 @@ class DT5550:
         
         mylist = [key for key, val in self.charges[idet].items() for _ in range(val)]
 
-        plt.hist(mylist,bins=100)
+        plt.hist(mylist,bins=bins, range=plot_range)
+        plt.title("id ="+str(idet),x=0.9,y=0.85)
         plt.xlabel('Q (a.u.)')
         
         # you can also directly plot from teh dict, but that does not always gives a visible histogram
         # command for example: plt.bar(list(io.charges[idet].keys()),io.charges[idet].values(),width=1.)
         
+        return
+    
+    def plot_all(self, **kwargs):
+        """
+        Plot for all detectors
+        
+        :param **kwargs: type ("charge", "time")
+        :param **kwargs: bins (default 100)
+        :param **kwargs: range (min,max)
+        """        
+        plot_type = kwargs.pop('type','charge')
+        plot_range = kwargs.pop('range',(0,10000))
+        bins = kwargs.pop('bins',100)
+
+
+        fig = plt.figure(figsize=(10,15))
+
+        for idet in range(N_DETECTOR):
+            plt.subplot(4, 2, 1+idet)
+            if plot_type == "charge":
+                self.plot_charge(idet,bins=bins,plot_range=plot_range)
+            elif plot_type == "time":
+                self.plot_time(idet,bins=bins,plot_range=plot_range)
+   
+        plt.show()
+
         return
