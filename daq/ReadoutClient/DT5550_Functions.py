@@ -2,7 +2,7 @@ import RegisterFile
 
 from ctypes import *
 
-mydll = cdll.LoadLibrary('niusb3_core.dll')
+mydll = cdll.LoadLibrary('niusb3_core.dll') 
 
 def Init():
     err = mydll.NI_USB3_Init()
