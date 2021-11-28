@@ -1,7 +1,7 @@
-# FineStructure
+# DT5550-DAQ
 
-Software to control, readout and analyze a lab setup to measure the fine-structure constant. The DAQ unit is a DT5550+DT5550AFE unit from CAEN and firmware code 
-has been developed in the SciCompiler development suite
+Software to control, readout and analyze a lab setup with a CAEN DT5550 FPGA unit. Firmware code 
+is developed in the SciCompiler development suite
 
 ### Contents
 
