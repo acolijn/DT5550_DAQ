@@ -152,6 +152,14 @@ def REG_INVERT_SET(data, handle):
     err = __abstracted_reg_write(data, RegisterFile.SCI_REG_INVERT, handle)
     return err
 
+def REG_TMODE_GET(handle):
+    [err, data] = __abstracted_reg_read(FinestructureFirmware_RegisterFile.SCI_REG_TMODE, handle)
+    return err, data
+
+def REG_TMODE_SET(data, handle):
+    err = __abstracted_reg_write(data, FinestructureFirmware_RegisterFile.SCI_REG_TMODE, handle)
+    return err
+
 def OSCILLOSCOPE_Oscilloscope_0_START(handle):
     err = __abstracted_reg_write(0, RegisterFile.SCI_REG_Oscilloscope_0_CONFIG_ARM, handle)
     if (err != 0):

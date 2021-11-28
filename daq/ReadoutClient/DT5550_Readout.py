@@ -43,6 +43,8 @@ def set_registers(handle, config_file):
     err = REG_WINDOW_SET(reg['WINDOW'], handle)
     # do we invert the AI or not
     err = REG_INVERT_SET(reg['INVERT'], handle)
+    # trigger mode: 0->single channel 1->two channels or more
+    err = REG_TMODE_SET(reg['TMODE'], handle)
 
     return
 #-----------------------------------------------------------------------------------------------------------------------

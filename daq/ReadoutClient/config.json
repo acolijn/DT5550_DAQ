@@ -9,6 +9,7 @@
     "BLLEN": 6,
     "BLHOLD": 150,
     "WINDOW": 300,
-    "INVERT": 1
+    "INVERT": 1,
+    "TMODE": 0
   }
 }
