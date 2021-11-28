@@ -2,6 +2,9 @@ import RegisterFile
 
 from ctypes import *
 
+#
+# load the USB3 communication library
+#
 mydll = cdll.LoadLibrary('niusb3_core.dll') 
 
 def Init():
