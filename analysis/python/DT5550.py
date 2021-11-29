@@ -58,7 +58,12 @@ class DT5550:
             # decode valid bit
             i0 = 15 + ioff
             i1 = 16 + ioff
-            ival = (int.from_bytes(event[i0:i1],byteorder='little') & 0xa0)>>7
+            ival0 = (int.from_bytes(event[i0:i1],byteorder='little') & 0x80)>>7
+            ival1 = (int.from_bytes(event[i0:i1],byteorder='little') & 0x40)>>6
+            # print(idet,'v0',ival0,'v1',ival1)
+            #ival = (ival0 & ival1)
+            ival = ival0
+            
             self.valid[idet] = ival
 
             # decode time
@@ -90,7 +95,7 @@ class DT5550:
 
         return err
     
-    def plot_time(self, idet, bins, plot_range):
+    def plot_time(self, idet, bins, plot_range, logy):
         """
         Plot the charge
         
@@ -101,12 +106,16 @@ class DT5550:
 
         plt.hist(mylist,bins=bins, range=plot_range)
         plt.title("id ="+str(idet),x=0.9,y=0.85)
+        if logy:
+            plt.yscale('log')
+        else:
+            plt.yscale('linear') 
 
         plt.xlabel('time (CLK)')
 
         return
     
-    def plot_charge(self, idet, bins, plot_range):
+    def plot_charge(self, idet, bins, plot_range, logy):
         """
         Plot the charge
         
@@ -117,6 +126,10 @@ class DT5550:
 
         plt.hist(mylist,bins=bins, range=plot_range)
         plt.title("id ="+str(idet),x=0.9,y=0.85)
+        if logy:
+            plt.yscale('log')
+        else:
+            plt.yscale('linear')    
         plt.xlabel('Q (a.u.)')
         
         # you can also directly plot from teh dict, but that does not always gives a visible histogram
@@ -131,10 +144,12 @@ class DT5550:
         :param **kwargs: type ("charge", "time")
         :param **kwargs: bins (default 100)
         :param **kwargs: range (min,max)
+        :param **kwargs: logy (default = False)
         """        
         plot_type = kwargs.pop('type','charge')
         plot_range = kwargs.pop('range',(0,10000))
         bins = kwargs.pop('bins',100)
+        logy = kwargs.pop('logy',False)
 
 
         fig = plt.figure(figsize=(10,15))
@@ -142,9 +157,9 @@ class DT5550:
         for idet in range(N_DETECTOR):
             plt.subplot(4, 2, 1+idet)
             if plot_type == "charge":
-                self.plot_charge(idet,bins=bins,plot_range=plot_range)
+                self.plot_charge(idet,bins=bins,plot_range=plot_range, logy=logy)
             elif plot_type == "time":
-                self.plot_time(idet,bins=bins,plot_range=plot_range)
+                self.plot_time(idet,bins=bins,plot_range=plot_range, logy=logy)
    
         plt.show()
 
