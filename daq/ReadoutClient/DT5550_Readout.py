@@ -38,7 +38,7 @@ def set_registers(handle, config_file):
     # set the baseline length: 2^n, where n is the value entered
     err = REG_BLLEN_SET(reg['BLLEN'], handle)
     # set the baseline hold time
-    err = REG_BLHOLD_SET(reg['BHOLD'], handle)
+    err = REG_BLHOLD_SET(reg['BLHOLD'], handle)
     # set the event window lenggth
     err = REG_WINDOW_SET(reg['WINDOW'], handle)
     # do we invert the AI or not

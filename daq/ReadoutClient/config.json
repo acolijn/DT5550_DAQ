@@ -1,15 +1,15 @@
 {
   "version": "Rev.A",
   "registers": {
-    "V_offset": "1.0",
+    "V_offset": 0.5,
     "GAIN": 1250,
-    "INTTIME": 200,
+    "INTTIME": 100,
     "PREINIT": 15,
     "THRS": 100,
     "BLLEN": 6,
     "BLHOLD": 150,
     "WINDOW": 300,
     "INVERT": 1,
-    "TMODE": 0
+    "TMODE": 1
   }
 }
