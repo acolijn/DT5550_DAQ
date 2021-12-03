@@ -8,7 +8,7 @@
     "BLLEN": 6,
     "BLHOLD": 100,
     "WINDOW": 350,
-    "TMODE": 1
+    "TMODE": 0
   },
   "detector_settings": [
     {
@@ -25,37 +25,37 @@
     },
     {
       "det_id": 2,
-      "GAIN": 10000,
+      "GAIN": 1000,
       "THRS": 100,
       "INVERT": 1
     },
     {
       "det_id": 3,
-      "GAIN": 10000,
+      "GAIN": 1000,
       "THRS": 100,
       "INVERT": 1
     },
     {
       "det_id": 4,
-      "GAIN": 100,
+      "GAIN": 1000,
       "THRS": 100,
       "INVERT": 1
     },
     {
       "det_id": 5,
-      "GAIN": 100,
+      "GAIN": 1000,
       "THRS": 100,
       "INVERT": 1
     },
     {
       "det_id": 6,
-      "GAIN": 100,
+      "GAIN": 1000,
       "THRS": 100,
       "INVERT": 1
     },
     {
       "det_id": 7,
-      "GAIN": 100,
+      "GAIN": 1000,
       "THRS": 100,
       "INVERT": 1
     }

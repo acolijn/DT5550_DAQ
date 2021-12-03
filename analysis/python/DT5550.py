@@ -104,6 +104,9 @@ class DT5550:
         
         mylist = [key for key, val in self.times[idet].items() for _ in range(val)]
 
+        if plot_range[0] == -1:
+            plot_range = (0, max(mylist))
+        
         plt.hist(mylist,bins=bins, range=plot_range)
         plt.title("id ="+str(idet),x=0.9,y=0.85)
         if logy:
@@ -121,8 +124,13 @@ class DT5550:
         
         :param idet: detector number
         """
+
         
         mylist = [key for key, val in self.charges[idet].items() for _ in range(val)]
+        
+        if plot_range[0] == -1:
+            plot_range = (0, max(mylist))
+
 
         plt.hist(mylist,bins=bins, range=plot_range)
         plt.title("id ="+str(idet),x=0.9,y=0.85)
@@ -147,7 +155,7 @@ class DT5550:
         :param **kwargs: logy (default = False)
         """        
         plot_type = kwargs.pop('type','charge')
-        plot_range = kwargs.pop('range',(0,10000))
+        plot_range = kwargs.pop('range',(-1,-1))
         bins = kwargs.pop('bins',100)
         logy = kwargs.pop('logy',False)
 

@@ -25,32 +25,52 @@ def set_registers(handle, config_file):
     V_offset = reg['V_offset']
     DAC_offset = int(1135 * V_offset + 1024)
     SetAFEBaseAddress(handle)
+    time.sleep(0.1)
+
     err = SetAFEOffset(0, DAC_offset, handle)
+    time.sleep(0.1)
+
     # top row of DT5550AFE
     err = SetAFEOffset(1, DAC_offset, handle)
+    time.sleep(0.1)
 
     # set the Integration time
     err = REG_INTTIME_SET(reg['INTTIME'], handle)
+    time.sleep(0.1)
+
     # set the pre-integration time
     err = REG_PREINT_SET(reg['PREINIT'], handle)
+    time.sleep(0.1)
+
     # set the baseline length: 2^n, where n is the value entered
     err = REG_BLLEN_SET(reg['BLLEN'], handle)
+    time.sleep(0.1)
+
     # set the baseline hold time
     err = REG_BLHOLD_SET(reg['BLHOLD'], handle)
+    time.sleep(0.1)
+
     # set the event window lenggth
     err = REG_WINDOW_SET(reg['WINDOW'], handle)
+    time.sleep(0.1)
+
     # trigger mode: 0->single channel 1->two channels or more
     err = REG_TMODE_SET(reg['TMODE'], handle)
-
+    time.sleep(0.1)
 
     for idet in range(N_DETECTOR):
         det_id = data['detector_settings'][idet]['det_id']
         # do we invert the AI or not
         err = REG_INVERT_SET(det_id,data['detector_settings'][idet]['INVERT'], handle)
+        time.sleep(0.1)
+
         # set the detection threshold
         err = REG_THRS_SET(det_id,data['detector_settings'][idet]['THRS'], handle)
+        time.sleep(0.1)
+
         # set the GAIN
         err = REG_GAIN_SET(det_id,data['detector_settings'][idet]['GAIN'], handle)
+        time.sleep(0.1)
 
     return
 #-----------------------------------------------------------------------------------------------------------------------
