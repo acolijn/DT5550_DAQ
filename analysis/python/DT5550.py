@@ -24,10 +24,10 @@ class DT5550:
         self.fin = open(self.filename,"rb")
 
         self.charges = [dict() for x in range(N_DETECTOR)]
-        self.Q_binwidth = 20
+        self.Q_binwidth = 10
         
         self.times = [dict() for x in range(N_DETECTOR)]
-        self.t_binwidth = 1
+        self.t_binwidth = 0.1
 
         # event structure
         self.t = np.zeros(N_DETECTOR)

@@ -91,20 +91,22 @@ def REG_PREINT_SET(data, handle):
     err = __abstracted_reg_write(data, RegisterFile.SCI_REG_PREINT, handle)
     return err
 
-def REG_GAIN_GET(handle):
-    [err, data] = __abstracted_reg_read(RegisterFile.SCI_REG_GAIN, handle)
-    return err, data
+#def REG_GAIN_GET(handle):
+#    [err, data] = __abstracted_reg_read(RegisterFile.SCI_REG_GAIN, handle)
+#    return err, data
 
-def REG_GAIN_SET(data, handle):
-    err = __abstracted_reg_write(data, RegisterFile.SCI_REG_GAIN, handle)
+def REG_GAIN_SET(idet, data, handle):
+    address = RegisterFile.SCI_REG_GAIN_BASE+idet+1
+    err = __abstracted_reg_write(data, address, handle)
     return err
 
-def REG_THRS_GET(handle):
-    [err, data] = __abstracted_reg_read(RegisterFile.SCI_REG_THRS, handle)
-    return err, data
+#def REG_THRS_GET(handle):
+#    [err, data] = __abstracted_reg_read(RegisterFile.SCI_REG_THRS, handle)
+#    return err, data
 
-def REG_THRS_SET(data, handle):
-    err = __abstracted_reg_write(data, RegisterFile.SCI_REG_THRS, handle)
+def REG_THRS_SET(idet, data, handle):
+    address = RegisterFile.SCI_REG_THRS_BASE+idet+1
+    err = __abstracted_reg_write(data, address , handle)
     return err
 
 def REG_BLLEN_GET(handle):
@@ -147,12 +149,13 @@ def REG_REARM_SET(data, handle):
     err = __abstracted_reg_write(data, RegisterFile.SCI_REG_REARM, handle)
     return err
 
-def REG_INVERT_GET(handle):
-    [err, data] = __abstracted_reg_read(RegisterFile.SCI_REG_INVERT, handle)
-    return err, data
+#def REG_INVERT_GET(handle):
+#    [err, data] = __abstracted_reg_read(RegisterFile.SCI_REG_INVERT, handle)
+#    return err, data
 
-def REG_INVERT_SET(data, handle):
-    err = __abstracted_reg_write(data, RegisterFile.SCI_REG_INVERT, handle)
+def REG_INVERT_SET(idet, data, handle):
+    address = RegisterFile.SCI_REG_INVERT_BASE + idet + 1
+    err = __abstracted_reg_write(data, address , handle)
     return err
 
 def REG_TMODE_GET(handle):

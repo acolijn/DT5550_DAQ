@@ -4,6 +4,8 @@ import json
 
 # number of bytes per event
 EVENT_LENGTH = 18
+# number of detectors
+N_DETECTOR = 8
 
 def set_registers(handle, config_file):
 
@@ -21,30 +23,34 @@ def set_registers(handle, config_file):
     # DC offset for the single-ended to differential converter
     # bottom row of DT5550AFE
     V_offset = reg['V_offset']
-    DAC_offset = int(1024 * V_offset + 2048)
+    DAC_offset = int(1135 * V_offset + 1024)
     SetAFEBaseAddress(handle)
     err = SetAFEOffset(0, DAC_offset, handle)
     # top row of DT5550AFE
     err = SetAFEOffset(1, DAC_offset, handle)
 
-    # set the GAIN
-    err = REG_GAIN_SET(reg['GAIN'], handle)
     # set the Integration time
     err = REG_INTTIME_SET(reg['INTTIME'], handle)
     # set the pre-integration time
     err = REG_PREINT_SET(reg['PREINIT'], handle)
-    # set the detection threshold (derivative trigger)
-    err = REG_THRS_SET(reg['THRS'], handle)
     # set the baseline length: 2^n, where n is the value entered
     err = REG_BLLEN_SET(reg['BLLEN'], handle)
     # set the baseline hold time
     err = REG_BLHOLD_SET(reg['BLHOLD'], handle)
     # set the event window lenggth
     err = REG_WINDOW_SET(reg['WINDOW'], handle)
-    # do we invert the AI or not
-    err = REG_INVERT_SET(reg['INVERT'], handle)
     # trigger mode: 0->single channel 1->two channels or more
     err = REG_TMODE_SET(reg['TMODE'], handle)
+
+
+    for idet in range(N_DETECTOR):
+        det_id = data['detector_settings'][idet]['det_id']
+        # do we invert the AI or not
+        err = REG_INVERT_SET(det_id,data['detector_settings'][idet]['INVERT'], handle)
+        # set the detection threshold
+        err = REG_THRS_SET(det_id,data['detector_settings'][idet]['THRS'], handle)
+        # set the GAIN
+        err = REG_GAIN_SET(det_id,data['detector_settings'][idet]['GAIN'], handle)
 
     return
 #-----------------------------------------------------------------------------------------------------------------------
@@ -170,7 +176,7 @@ def main(argv):
     n_event = 0
 
     try:
-        opts, args = getopt.getopt(argv,"hn:o:c",["nevent=","ofile=","cfile="])
+        opts, args = getopt.getopt(argv,"hn:o:c:",["nevent=","ofile=","cfile="])
     except getopt.GetoptError:
         print('DT5550_Readout.py -n <number of events> -o <outputfile> -c <configfile>')
         sys.exit(2)
@@ -185,6 +191,8 @@ def main(argv):
             config_file = arg
         elif opt in ("-n", "--nevent"):
             n_event = int(arg)
+
+    print('config = ',config_file)
 
     # initialize daq
     handle = initialize_daq()
