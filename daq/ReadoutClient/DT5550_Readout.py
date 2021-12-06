@@ -1,11 +1,15 @@
 from DT5550_Functions import *
 import sys, getopt, time
 import json
+import numpy as np
 
 # number of bytes per event
 EVENT_LENGTH = 18
 # number of detectors
 N_DETECTOR = 8
+# termination
+TERMINATION_50OHM = 1
+TERMINATION_1MOHM = 0
 
 def set_registers(handle, config_file):
 
@@ -23,9 +27,20 @@ def set_registers(handle, config_file):
     # DC offset for the single-ended to differential converter
     # bottom row of DT5550AFE
     V_offset = reg['V_offset']
-    DAC_offset = int(1135 * V_offset + 1024)
+    V_max = 2.0
+
+    #
+    # from some repo of nuclear instruments..... funky conversion
+    #
+    DAC_offset = int((V_offset+V_max)/V_max/2*(4095-1650)+1650)
+    print('DC offset =',V_offset,' DAC = ',DAC_offset)
+
+    # set the base addresses for the i2c controller....
     SetAFEBaseAddress(handle)
     time.sleep(0.1)
+
+    # set teh correct termination of the analog inputs
+    SetAFEImpedance(TERMINATION_50OHM, handle)
 
     err = SetAFEOffset(0, DAC_offset, handle)
     time.sleep(0.1)
@@ -33,6 +48,7 @@ def set_registers(handle, config_file):
     # top row of DT5550AFE
     err = SetAFEOffset(1, DAC_offset, handle)
     time.sleep(0.1)
+
 
     # set the Integration time
     err = REG_INTTIME_SET(reg['INTTIME'], handle)
@@ -110,7 +126,7 @@ def read_data(filename, N_Total_Events, handle):
     :param handle: handle to DAQ system
     :return:
     """
-
+    nloop = 0
     N_Packet = 1000
     Timeout_ms = 1000
     N_Read_Events = 0
@@ -169,7 +185,22 @@ def read_data(filename, N_Total_Events, handle):
                     if N_Read_Events >= N_Total_Events:
                         break
 
+
                 print("Total Acquired Events: ", N_Read_Events)
+
+
+
+                #DAC_offset = nloop*100
+                #print('OFFSET=',DAC_offset)
+                #err = SetAFEOffset(0, DAC_offset, handle)
+                #time.sleep(0.1)
+
+                # top row of DT5550AFE
+                #err = SetAFEOffset(1, DAC_offset, handle)
+                #time.sleep(0.1)
+
+
+                #nloop = nloop +1
         else:
             print("Status Error")
     else:

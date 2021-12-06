@@ -43,6 +43,15 @@ def __abstracted_mem_write(data, count, address, timeout_ms, handle):
     err = mydll.NI_USB3_WriteData(data, count, address, 0, timeout_ms, byref(handle), byref(written_data))
     return err, written_data.value
 
+def __abstracted_mem_read(count, address, timeout_ms, handle):
+    data = (c_uint * (1 * count))()
+    read_data = (c_int * 1)()
+    valid_data = (c_int * 1)()
+
+    err = mydll.NI_USB3_ReadData(data, count, address, 0, timeout_ms, byref(handle), byref(read_data), byref(valid_data))
+    return err, data, read_data, valid_data
+
+
 def __abstracted_fifo_read(count, address, address_status, blocking, timeout_ms, handle):
     data = (c_uint * (2* count))()
     read_data = c_uint(0)
@@ -62,9 +71,12 @@ def __abstracted_fifo_read(count, address, timeout_ms, handle):
     valid_data = (c_int * 1)()
     err = mydll.NI_USB3_ReadData(byref(data), count, address, 1, timeout_ms, byref(handle), byref(read_data), byref(valid_data))
     return err, data, read_data, valid_data     
-    
+
+#
+# communications to the I2C bus to teh DT5550AFE
+#
 def SetAFEBaseAddress(handle):
-    err = mydll.NI_USB3_SetIICControllerBaseAddress(RegisterFile.SCI_AFE_REG_CTRL, RegisterFile.SCI_AFE_REG_MON, byref(handle))
+    err = mydll.NI_USB3_SetIICControllerBaseAddress(RegisterFile.SCI_REG_i2c_master_0_CTRL, RegisterFile.SCI_REG_i2c_master_0_MON, byref(handle))
     return err
 
 def SetAFEOffset(top, value, handle):
@@ -75,6 +87,9 @@ def SetAFEImpedance(value, handle):
     err = mydll.NI_USB3_SetImpedance(value, byref(handle))
     return err
 
+#
+# registers on the DT5550
+#
 def REG_INTTIME_GET(handle):
     [err, data] = __abstracted_reg_read(RegisterFile.SCI_REG_INTTIME, handle)
     return err, data
@@ -212,6 +227,7 @@ def OSCILLOSCOPE_Oscilloscope_0_SET_TRIGGER_MODE(OscilloscopeTriggerMode, Oscill
         Edge = 1
     triggermode = c_int(0)
     triggermode = (OscilloscopeTriggerChannel << 8)  + (SoftwareTrigger << 7 ) + (Edge << 3) + (SoftwareTrigger << 1) + AnalogTrigger +(Digital0Trigger << 2) + (Digital1Trigger << 2) + Digital1Trigger + (Digital2Trigger << 2) + (Digital2Trigger << 1) + (Digital3Trigger << 2) + (Digital3Trigger << 1) + Digital3Trigger
+    triggermode = 0x00
     err = __abstracted_reg_write(triggermode, RegisterFile.SCI_REG_Oscilloscope_0_CONFIG_TRIGGER_MODE, handle)
     return err
 
@@ -237,17 +253,22 @@ def OSCILLOSCOPE_Oscilloscope_0_RECONSTRUCT_DATA(OscilloscopeData, OscilloscopeP
     Digital3 = list(range(OscilloscopeSamples*OscilloscopeChannels))
     for n in range(OscilloscopeChannels):
         current = OscilloscopePosition - OscilloscopePreTrigger
+        print('current =',current)
         if ((current) > 0):
             k = 0
             for i in range(current, OscilloscopeSamples-1):
                 Analog[k+ OscilloscopeSamples * n] = OscilloscopeData[i+ OscilloscopeSamples * n] & 65535
+                print(n,i,k,'data =',Analog[k+ OscilloscopeSamples * n])
                 Digital0[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 16 & 1)
                 Digital1[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 17 & 1)
                 Digital2[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 18 & 1)
                 Digital3[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 19 & 1)
                 k = k + 1
             for i in range(0, current-1):
+
                 Analog[k+ OscilloscopeSamples * n] = OscilloscopeData[i+ OscilloscopeSamples * n] & 65535
+                print(n,i,k,'data =',Analog[k+ OscilloscopeSamples * n])
+
                 Digital0[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 16 & 1)
                 Digital1[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 17 & 1)
                 Digital2[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 18 & 1)
@@ -261,6 +282,8 @@ def OSCILLOSCOPE_Oscilloscope_0_RECONSTRUCT_DATA(OscilloscopeData, OscilloscopeP
                 Digital1[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 17 & 1)
                 Digital2[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 18 & 1)
                 Digital3[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 19 & 1)
+                print(n,i,k,'data =',Analog[k+ OscilloscopeSamples * n])
+
                 k = k + 1
             for i in range(0, OscilloscopeSamples+current-1):
                 Analog[k+ OscilloscopeSamples * n] = OscilloscopeData[i+ OscilloscopeSamples * n] & 65535
@@ -268,6 +291,8 @@ def OSCILLOSCOPE_Oscilloscope_0_RECONSTRUCT_DATA(OscilloscopeData, OscilloscopeP
                 Digital1[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 17 & 1)
                 Digital2[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 18 & 1)
                 Digital3[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 19 & 1)
+                print(n,i,k,'data =',Analog[k+ OscilloscopeSamples * n])
+
                 k = k + 1
     return Analog, Digital0, Digital1,Digital2, Digital3
 

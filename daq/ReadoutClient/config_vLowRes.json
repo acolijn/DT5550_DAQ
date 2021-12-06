@@ -2,7 +2,7 @@
   "version": "Rev.B",
   "comment": "just work and no play makes AP a bad boy",
   "registers": {
-    "V_offset": 0.8,
+    "V_offset": -0.6,
     "INTTIME": 200,
     "PREINIT": 15,
     "BLLEN": 6,
@@ -14,13 +14,13 @@
     {
       "det_id": 0,
       "GAIN": 1000,
-      "THRS": 100,
+      "THRS": 55000,
       "INVERT": 1
     },
     {
       "det_id": 1,
       "GAIN": 1000,
-      "THRS": 100,
+      "THRS": 55000,
       "INVERT": 1
     },
     {
