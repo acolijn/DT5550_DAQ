@@ -1,6 +1,16 @@
 import RegisterFile
-
+import json, time
 from ctypes import *
+
+# number of bytes per event
+EVENT_LENGTH = 18
+# number of detectors
+N_DETECTOR = 8
+# termination
+TERMINATION_50OHM = 1
+TERMINATION_1MOHM = 0
+# clock speed of DT5550
+CLK = 12.5
 
 #
 # load the USB3 communication library
@@ -247,54 +257,26 @@ def OSCILLOSCOPE_Oscilloscope_0_RECONSTRUCT_DATA(OscilloscopeData, OscilloscopeP
     OscilloscopeChannels = 8
     OscilloscopeSamples = 1024
     Analog = list(range(OscilloscopeSamples*OscilloscopeChannels))
-    Digital0 = list(range(OscilloscopeSamples*OscilloscopeChannels))
-    Digital1 = list(range(OscilloscopeSamples*OscilloscopeChannels))
-    Digital2 = list(range(OscilloscopeSamples*OscilloscopeChannels))
-    Digital3 = list(range(OscilloscopeSamples*OscilloscopeChannels))
+
     for n in range(OscilloscopeChannels):
         current = OscilloscopePosition - OscilloscopePreTrigger
-        print('current =',current)
         if ((current) > 0):
             k = 0
             for i in range(current, OscilloscopeSamples-1):
-                Analog[k+ OscilloscopeSamples * n] = OscilloscopeData[i+ OscilloscopeSamples * n] & 65535
-                print(n,i,k,'data =',Analog[k+ OscilloscopeSamples * n])
-                Digital0[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 16 & 1)
-                Digital1[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 17 & 1)
-                Digital2[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 18 & 1)
-                Digital3[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 19 & 1)
+                Analog[k+ OscilloscopeSamples * n] = OscilloscopeData[i+ OscilloscopeSamples * n] & 0x000fffff
                 k = k + 1
             for i in range(0, current-1):
-
-                Analog[k+ OscilloscopeSamples * n] = OscilloscopeData[i+ OscilloscopeSamples * n] & 65535
-                print(n,i,k,'data =',Analog[k+ OscilloscopeSamples * n])
-
-                Digital0[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 16 & 1)
-                Digital1[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 17 & 1)
-                Digital2[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 18 & 1)
-                Digital3[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 19 & 1)
+                Analog[k+ OscilloscopeSamples * n] = OscilloscopeData[i+ OscilloscopeSamples * n] & 0x000fffff
                 k = k + 1
         else:
             k = 0
             for i in range(OscilloscopeSamples+current, OscilloscopeSamples-1):
-                Analog[k+ OscilloscopeSamples * n] = OscilloscopeData[i+ OscilloscopeSamples * n] & 65535
-                Digital0[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 16 & 1)
-                Digital1[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 17 & 1)
-                Digital2[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 18 & 1)
-                Digital3[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 19 & 1)
-                print(n,i,k,'data =',Analog[k+ OscilloscopeSamples * n])
-
+                Analog[k+ OscilloscopeSamples * n] = OscilloscopeData[i+ OscilloscopeSamples * n] & 0x000fffff
                 k = k + 1
             for i in range(0, OscilloscopeSamples+current-1):
-                Analog[k+ OscilloscopeSamples * n] = OscilloscopeData[i+ OscilloscopeSamples * n] & 65535
-                Digital0[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 16 & 1)
-                Digital1[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 17 & 1)
-                Digital2[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 18 & 1)
-                Digital3[k+ OscilloscopeSamples * n] = (OscilloscopeData[i+ OscilloscopeSamples * n] >> 19 & 1)
-                print(n,i,k,'data =',Analog[k+ OscilloscopeSamples * n])
-
+                Analog[k+ OscilloscopeSamples * n] = OscilloscopeData[i+ OscilloscopeSamples * n] & 0x000fffff
                 k = k + 1
-    return Analog, Digital0, Digital1,Digital2, Digital3
+    return Analog
 
 def CPACK_CP_0_RESET(handle):
     err = __abstracted_reg_write(2, RegisterFile.SCI_REG_CP_0_CONFIG, handle)
@@ -333,40 +315,134 @@ def CPACK_CP_0_GET_DATA(n_packet, timeout_ms, handle):
     [err, data, read_data, valid_data] = __abstracted_fifo_read(data_length, RegisterFile.SCI_REG_CP_0_FIFOADDRESS, timeout_ms, handle)
     return err, data, read_data, valid_data
 
+def set_registers(handle, config_file):
 
-def CPACK_CP_0_RECONSTRUCT_DATA(FrameData):
-    in_sync = 0
-    tot_data = len(FrameData)
-    n_ch =24
-    n_packet = tot_data / (n_ch + 3)
-    event_energy, Time_Code, Pack_Id, Energy = ([] for i in range(4))
-    for i in range(len(FrameData)):
-        mpe = FrameData[i]
-        if (in_sync == 0):
-            if (mpe != 0xffffffff):
-                continue
-            in_sync = 1
-            continue
-        if (in_sync == 1):
-            event_timecode = mpe 
-            Time_Code.append(event_timecode)
-            in_sync = 2
-            continue
-        if (in_sync == 2):
-            Pack_Id.append(mpe)
-            in_sync = 3
-            ch_index = 0
-            continue
-        if (in_sync == 3):
-            if (mpe == 0xffffffff):
-                in_sync = 1
-            else:
-                ev_energy = mpe
-                event_energy.append(ev_energy)
-                ch_index += 1
-                if (ch_index == n_ch):
-                    Energy.append(event_energy)
-                    event_energy = []
-                    in_sync = 0
-    return Time_Code, Pack_Id, Energy
+    print('set_registers:: Set up the registers in the DT5550')
 
+    # read configuration from the config_file file
+    if config_file == "":
+        # not defined then read default....
+        config_file = 'config.json'
+
+    print('set_registers:: Configuration from: ',config_file)
+
+    f = open(config_file,'r')
+    data = json.load(f)
+    f.close()
+    # get the registers from teh config file
+    reg = data['registers']
+
+    # DC offset for the single-ended to differential converter
+    # bottom row of DT5550AFE
+    V_offset = reg['V_offset']
+    V_max = 2.0
+
+    #
+    # from some repo of nuclear instruments..... funky conversion
+    #
+    DAC_offset = int((V_offset+V_max)/V_max/2*(4095-1650)+1650)
+
+    # set the base addresses for the i2c controller....
+    SetAFEBaseAddress(handle)
+    time.sleep(0.1)
+
+    # set the correct termination of the analog inputs
+
+    print('set_registers:: DT5550AFE:: Input Impedance =',reg['Termination'])
+    termination = reg['Termination']
+    if termination == TERMINATION_50OHM:
+        SetAFEImpedance(TERMINATION_50OHM, handle)
+    elif termination == TERMINATION_1MOHM:
+        SetAFEImpedance(TERMINATION_1MOHM, handle)
+    else:
+        print('set_registers:: DT5550AFE:: ERROR Wrong termination chosen')
+        return -1
+
+    # set the DDC offsets
+
+    # bottom row of DT5550AFE
+    print('set_registers:: DT5550AFE:: DC offset =',V_offset,'V DAC = ',DAC_offset)
+
+    SetAFEOffset(0, DAC_offset, handle)
+    time.sleep(0.1)
+    # top row of DT5550AFE
+    SetAFEOffset(1, DAC_offset, handle)
+    time.sleep(0.1)
+
+
+    # set the Integration time
+    print('set_registers:: Integration time =',reg['INTTIME']*CLK,' ns')
+    REG_INTTIME_SET(reg['INTTIME'], handle)
+    time.sleep(0.1)
+
+    # set the pre-integration time
+    print('set_registers:: Pre-integration time =',reg['PREINIT']*CLK,' ns')
+    REG_PREINT_SET(reg['PREINIT'], handle)
+    time.sleep(0.1)
+
+    # set the baseline length: 2^n, where n is the value entered
+    print('set_registers:: Baseline length =',reg['BLLEN'],' (see manual)')
+    REG_BLLEN_SET(reg['BLLEN'], handle)
+    time.sleep(0.1)
+
+    # set the baseline hold time
+    print('set_registers:: Baseline hold time =',reg['BLHOLD'],' (see manual)')
+    REG_BLHOLD_SET(reg['BLHOLD'], handle)
+    time.sleep(0.1)
+
+    # set the event window lenggth
+    print('set_registers:: Event window =',reg['WINDOW']*CLK,' (ns)')
+    REG_WINDOW_SET(reg['WINDOW'], handle)
+    time.sleep(0.1)
+
+    # trigger mode: 0->single channel 1->two channels or more
+    print('set_registers:: Tigger mode =',reg['TMODE'])
+    REG_TMODE_SET(reg['TMODE'], handle)
+    time.sleep(0.1)
+
+    for idet in range(N_DETECTOR):
+        det_id = data['detector_settings'][idet]['det_id']
+        thrs = data['detector_settings'][idet]['THRS']
+        invert = data['detector_settings'][idet]['INVERT']
+        gain = data['detector_settings'][idet]['GAIN']
+
+        # do we invert the AI or not
+        print('set_registers::        id',det_id,' THRS =',thrs,' GAIN =',gain,' INVERT=',invert )
+
+        REG_INVERT_SET(det_id, invert, handle)
+        time.sleep(0.1)
+        # set the detection threshold
+        REG_THRS_SET(det_id, thrs, handle)
+        time.sleep(0.1)
+
+        # set the GAIN
+        REG_GAIN_SET(det_id, gain, handle)
+        time.sleep(0.1)
+
+    return
+#-----------------------------------------------------------------------------------------------------------------------
+def initialize_daq():
+    """
+
+    :return: handle : handle to the DAQ system
+    """
+
+    #   List the DT5550 devices on the USB bus
+    [ListOfDevices, count] = ListDevices()
+    if count == 0:
+        print("ERROR: No DAQ Devices")
+        return -1
+
+    # Derive the board id
+    board = ListOfDevices[0].encode('utf-8')
+
+    # Initialize the board and get a handle
+    Init()
+    [err, handle] = ConnectDevice(board)
+    if (err == 0):
+        print("Successful connection to board ", board)
+    else:
+        print("Connection Error")
+        return -1
+
+    return handle

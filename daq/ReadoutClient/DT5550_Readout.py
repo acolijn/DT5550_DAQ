@@ -5,118 +5,7 @@ import numpy as np
 
 # number of bytes per event
 EVENT_LENGTH = 18
-# number of detectors
-N_DETECTOR = 8
-# termination
-TERMINATION_50OHM = 1
-TERMINATION_1MOHM = 0
 
-def set_registers(handle, config_file):
-
-    # read configuration from the config_file file
-    if config_file == "":
-        # not defined then read default....
-        config_file = 'config.json'
-
-    f = open(config_file,'r')
-    data = json.load(f)
-    f.close()
-    # get the registers from teh config file
-    reg = data['registers']
-
-    # DC offset for the single-ended to differential converter
-    # bottom row of DT5550AFE
-    V_offset = reg['V_offset']
-    V_max = 2.0
-
-    #
-    # from some repo of nuclear instruments..... funky conversion
-    #
-    DAC_offset = int((V_offset+V_max)/V_max/2*(4095-1650)+1650)
-    print('DC offset =',V_offset,' DAC = ',DAC_offset)
-
-    # set the base addresses for the i2c controller....
-    SetAFEBaseAddress(handle)
-    time.sleep(0.1)
-
-    # set teh correct termination of the analog inputs
-    SetAFEImpedance(TERMINATION_50OHM, handle)
-
-    err = SetAFEOffset(0, DAC_offset, handle)
-    time.sleep(0.1)
-
-    # top row of DT5550AFE
-    err = SetAFEOffset(1, DAC_offset, handle)
-    time.sleep(0.1)
-
-
-    # set the Integration time
-    err = REG_INTTIME_SET(reg['INTTIME'], handle)
-    time.sleep(0.1)
-
-    # set the pre-integration time
-    err = REG_PREINT_SET(reg['PREINIT'], handle)
-    time.sleep(0.1)
-
-    # set the baseline length: 2^n, where n is the value entered
-    err = REG_BLLEN_SET(reg['BLLEN'], handle)
-    time.sleep(0.1)
-
-    # set the baseline hold time
-    err = REG_BLHOLD_SET(reg['BLHOLD'], handle)
-    time.sleep(0.1)
-
-    # set the event window lenggth
-    err = REG_WINDOW_SET(reg['WINDOW'], handle)
-    time.sleep(0.1)
-
-    # trigger mode: 0->single channel 1->two channels or more
-    err = REG_TMODE_SET(reg['TMODE'], handle)
-    time.sleep(0.1)
-
-    for idet in range(N_DETECTOR):
-        det_id = data['detector_settings'][idet]['det_id']
-        # do we invert the AI or not
-        err = REG_INVERT_SET(det_id,data['detector_settings'][idet]['INVERT'], handle)
-        time.sleep(0.1)
-
-        # set the detection threshold
-        err = REG_THRS_SET(det_id,data['detector_settings'][idet]['THRS'], handle)
-        time.sleep(0.1)
-
-        # set the GAIN
-        err = REG_GAIN_SET(det_id,data['detector_settings'][idet]['GAIN'], handle)
-        time.sleep(0.1)
-
-    return
-#-----------------------------------------------------------------------------------------------------------------------
-def initialize_daq():
-    """
-
-    :return: handle : handle to the DAQ system
-    """
-
-    #   List the DT5550 devices on the USB bus
-    [ListOfDevices, count] = ListDevices()
-    if count == 0:
-        print("ERROR: No DAQ Devices")
-        return -1
-
-    # Derive the board id
-    board = ListOfDevices[0].encode('utf-8')
-
-    # Initialize the board and get a handle
-    Init()
-    [err, handle] = ConnectDevice(board)
-    if (err == 0):
-        print("Successful connection to board ", board)
-    else:
-        print("Connection Error")
-        return -1
-
-
-
-    return handle
 #-----------------------------------------------------------------------------------------------------------------------
 def read_data(filename, N_Total_Events, handle):
     """
@@ -242,8 +131,6 @@ def main(argv):
             config_file = arg
         elif opt in ("-n", "--nevent"):
             n_event = int(arg)
-
-    print('config = ',config_file)
 
     # initialize daq
     handle = initialize_daq()
