@@ -17,14 +17,14 @@ def main(argv):
 
     Oscilloscope_Status = 0
     Timeout_ms = 1000
-    Decimator = 0
+    Decimator = 2
     Pre_Trigger = 500
     Trigger_Level = 56000
     Trigger_Channel = 0
     Trigger_Mode = "Analog" #"Free", "Analog", "Digital0", "Digital1", "Digital2", "Digital3"
     Trigger_Edge = "Rising" #"Rising", "Falling"
 
-    nevent = 5
+    nevent = 20
 
     ievent = 0
     fout = open('waveform.output','wb')
@@ -32,18 +32,30 @@ def main(argv):
         if (OSCILLOSCOPE_Oscilloscope_0_SET_DECIMATOR(Decimator, handle) != 0):
             print("Set Decimator Error")
             exit
+        time.sleep(0.1)
+
         if (OSCILLOSCOPE_Oscilloscope_0_SET_PRETRIGGER(Pre_Trigger, handle) != 0):
             print("Set PreTrigger Error")
             exit
+        time.sleep(0.1)
+
         if (OSCILLOSCOPE_Oscilloscope_0_SET_TRIGGER_LEVEL(Trigger_Level, handle) != 0):
             print("Set Trigger Level Error")
             exit
+        time.sleep(0.1)
+
         if (OSCILLOSCOPE_Oscilloscope_0_SET_TRIGGER_MODE(Trigger_Mode, Trigger_Channel, Trigger_Edge, handle) != 0):
             print("Set Trigger Mode Error")
             exit
+        time.sleep(0.1)
+
         if (OSCILLOSCOPE_Oscilloscope_0_START(handle) == True):
+            time.sleep(0.1)
+
             while (Oscilloscope_Status != 1):
                 [err, Oscilloscope_Status] = OSCILLOSCOPE_Oscilloscope_0_GET_STATUS(handle)
+                print('Status = ...',Oscilloscope_Status)
+
             [err, Event_Position] = OSCILLOSCOPE_Oscilloscope_0_GET_POSITION(handle)
             [err, Oscilloscope_Data, Oscilloscope_Read_Data, Oscilloscope_Valid_Data] = OSCILLOSCOPE_Oscilloscope_0_GET_DATA(Timeout_ms, handle)
             print(Oscilloscope_Data, Oscilloscope_Read_Data, Oscilloscope_Valid_Data)
@@ -53,13 +65,6 @@ def main(argv):
             #    print(i,Oscilloscope_Data[i])
             Analog = OSCILLOSCOPE_Oscilloscope_0_RECONSTRUCT_DATA(Oscilloscope_Data, Event_Position, Pre_Trigger)
             np.array(Analog).tofile(fout)
-
-
-            #plt.cla()
-            #plt.plot(Analog)
-            #plt.show()
-
-            #plt.pause(0.01)
 
             print(ievent)
             ievent = ievent +1

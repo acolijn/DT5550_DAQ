@@ -235,9 +235,10 @@ def OSCILLOSCOPE_Oscilloscope_0_SET_TRIGGER_MODE(OscilloscopeTriggerMode, Oscill
         Edge = 0
     else:
         Edge = 1
-    triggermode = c_int(0)
-    triggermode = (OscilloscopeTriggerChannel << 8)  + (SoftwareTrigger << 7 ) + (Edge << 3) + (SoftwareTrigger << 1) + AnalogTrigger +(Digital0Trigger << 2) + (Digital1Trigger << 2) + Digital1Trigger + (Digital2Trigger << 2) + (Digital2Trigger << 1) + (Digital3Trigger << 2) + (Digital3Trigger << 1) + Digital3Trigger
+    #triggermode = c_int(0)
+    #triggermode = (OscilloscopeTriggerChannel << 8)  + (SoftwareTrigger << 7 ) + (Edge << 3) + (SoftwareTrigger << 1) + AnalogTrigger +(Digital0Trigger << 2) + (Digital1Trigger << 2) + Digital1Trigger + (Digital2Trigger << 2) + (Digital2Trigger << 1) + (Digital3Trigger << 2) + (Digital3Trigger << 1) + Digital3Trigger
     triggermode = 0x00
+    print('TMODE = ',triggermode)
     err = __abstracted_reg_write(triggermode, RegisterFile.SCI_REG_Oscilloscope_0_CONFIG_TRIGGER_MODE, handle)
     return err
 
@@ -250,7 +251,7 @@ def OSCILLOSCOPE_Oscilloscope_0_GET_POSITION(handle):
     return err, position
 
 def OSCILLOSCOPE_Oscilloscope_0_GET_DATA(timeout_ms, handle):
-    [err, data, read_data, valid_data] = __abstracted_mem_read(8192, RegisterFile.SCI_REG_Oscilloscope_0_FIFOADDRESS, timeout_ms, handle)
+    [err, data, read_data, valid_data] = __abstracted_mem_read(8*1024, RegisterFile.SCI_REG_Oscilloscope_0_FIFOADDRESS, timeout_ms, handle)
     return err, data, read_data, valid_data
 
 def OSCILLOSCOPE_Oscilloscope_0_RECONSTRUCT_DATA(OscilloscopeData, OscilloscopePosition, OscilloscopePreTrigger):
@@ -258,8 +259,11 @@ def OSCILLOSCOPE_Oscilloscope_0_RECONSTRUCT_DATA(OscilloscopeData, OscilloscopeP
     OscilloscopeSamples = 1024
     Analog = list(range(OscilloscopeSamples*OscilloscopeChannels))
 
+    print('SIZE =',len(OscilloscopeData))
+
     for n in range(OscilloscopeChannels):
         current = OscilloscopePosition - OscilloscopePreTrigger
+        print('CURRENT',current)
         if ((current) > 0):
             k = 0
             for i in range(current, OscilloscopeSamples-1):
@@ -268,6 +272,7 @@ def OSCILLOSCOPE_Oscilloscope_0_RECONSTRUCT_DATA(OscilloscopeData, OscilloscopeP
             for i in range(0, current-1):
                 Analog[k+ OscilloscopeSamples * n] = OscilloscopeData[i+ OscilloscopeSamples * n] & 0x000fffff
                 k = k + 1
+
         else:
             k = 0
             for i in range(OscilloscopeSamples+current, OscilloscopeSamples-1):
@@ -276,6 +281,10 @@ def OSCILLOSCOPE_Oscilloscope_0_RECONSTRUCT_DATA(OscilloscopeData, OscilloscopeP
             for i in range(0, OscilloscopeSamples+current-1):
                 Analog[k+ OscilloscopeSamples * n] = OscilloscopeData[i+ OscilloscopeSamples * n] & 0x000fffff
                 k = k + 1
+    #for k in range(len(Analog)):
+    #   if (Analog[k]&0x0000ffff<10000) and (k>0):
+    #      Analog[k] = Analog[k-1]
+
     return Analog
 
 def CPACK_CP_0_RESET(handle):
