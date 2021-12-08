@@ -60,5 +60,13 @@
       "THRS": 100,
       "INVERT": 1
     }
-  ]
+  ],
+  "waveform_settings": {
+    "mode": "external",
+    "pre_trigger": 400,
+    "decimator": 0,
+    "channel": 1,
+    "threshold": 55000,
+    "edge": "Rising"
+  }
 }

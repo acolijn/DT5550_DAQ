@@ -213,31 +213,44 @@ def OSCILLOSCOPE_Oscilloscope_0_SET_TRIGGER_LEVEL(OscilloscopeTriggerLevel, hand
     return err
 
 def OSCILLOSCOPE_Oscilloscope_0_SET_TRIGGER_MODE(OscilloscopeTriggerMode, OscilloscopeTriggerChannel, OscilloscopeTriggerEdge, handle):
-    AnalogTrigger = 0
-    Digital0Trigger = 0
-    Digital1Trigger = 0
-    Digital2Trigger = 0
-    Digital3Trigger = 0
-    SoftwareTrigger = 0
-    if (OscilloscopeTriggerMode == "Analog"):
-        AnalogTrigger = 1
-    if (OscilloscopeTriggerMode == "Digital0"):
-        Digital0Trigger = 1
-    if (OscilloscopeTriggerMode == "Digital1"):
-        Digital1Trigger = 1
-    if (OscilloscopeTriggerMode == "Digital2"):
-        Digital2Trigger = 1
-    if (OscilloscopeTriggerMode == "Digital3"):
-        Digital3Trigger = 1
-    if (OscilloscopeTriggerMode == "Free"):
-        SoftwareTrigger = 1
-    if (OscilloscopeTriggerEdge == "Rising"):
-        Edge = 0
-    else:
-        Edge = 1
-    #triggermode = c_int(0)
-    #triggermode = (OscilloscopeTriggerChannel << 8)  + (SoftwareTrigger << 7 ) + (Edge << 3) + (SoftwareTrigger << 1) + AnalogTrigger +(Digital0Trigger << 2) + (Digital1Trigger << 2) + Digital1Trigger + (Digital2Trigger << 2) + (Digital2Trigger << 1) + (Digital3Trigger << 2) + (Digital3Trigger << 1) + Digital3Trigger
-    triggermode = 0x00
+    """
+    Set the trigger configuration for the waveform readout
+
+    :param OscilloscopeTriggerMode: "external", "Analog", "Digital[0:3]"
+    :param OscilloscopeTriggerChannel: channel to trigger on - only relevant if OscilloscopeTriggerMode!= "external"
+    :param OscilloscopeTriggerEdge: "Rising" / "Falling"  - only relevant if ......
+    :param handle:
+    :return:
+    """
+    triggermode = 0
+
+    if OscilloscopeTriggerMode != "external":
+        AnalogTrigger = 0
+        Digital0Trigger = 0
+        Digital1Trigger = 0
+        Digital2Trigger = 0
+        Digital3Trigger = 0
+        SoftwareTrigger = 0
+        if (OscilloscopeTriggerMode == "Analog"):
+            AnalogTrigger = 1
+        if (OscilloscopeTriggerMode == "Digital0"):
+            Digital0Trigger = 1
+        if (OscilloscopeTriggerMode == "Digital1"):
+            Digital1Trigger = 1
+        if (OscilloscopeTriggerMode == "Digital2"):
+            Digital2Trigger = 1
+        if (OscilloscopeTriggerMode == "Digital3"):
+            Digital3Trigger = 1
+        if (OscilloscopeTriggerMode == "Free"):
+            SoftwareTrigger = 1
+        if (OscilloscopeTriggerEdge == "Rising"):
+            Edge = 0
+        else:
+            Edge = 1
+        triggermode = (OscilloscopeTriggerChannel << 8)  + (SoftwareTrigger << 7 ) + (Edge << 3) + (SoftwareTrigger << 1) + AnalogTrigger +(Digital0Trigger << 2) + (Digital1Trigger << 2) + Digital1Trigger + (Digital2Trigger << 2) + (Digital2Trigger << 1) + (Digital3Trigger << 2) + (Digital3Trigger << 1) + Digital3Trigger
+    else: # external trigger mode
+        triggermode = 0x00
+
     print('TMODE = ',triggermode)
     err = __abstracted_reg_write(triggermode, RegisterFile.SCI_REG_Oscilloscope_0_CONFIG_TRIGGER_MODE, handle)
     return err
@@ -259,11 +272,8 @@ def OSCILLOSCOPE_Oscilloscope_0_RECONSTRUCT_DATA(OscilloscopeData, OscilloscopeP
     OscilloscopeSamples = 1024
     Analog = list(range(OscilloscopeSamples*OscilloscopeChannels))
 
-    print('SIZE =',len(OscilloscopeData))
-
     for n in range(OscilloscopeChannels):
         current = OscilloscopePosition - OscilloscopePreTrigger
-        print('CURRENT',current)
         if ((current) > 0):
             k = 0
             for i in range(current, OscilloscopeSamples-1):

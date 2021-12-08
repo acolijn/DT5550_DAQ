@@ -76,20 +76,6 @@ def read_data(filename, N_Total_Events, handle):
 
 
                 print("Total Acquired Events: ", N_Read_Events)
-
-
-
-                #DAC_offset = nloop*100
-                #print('OFFSET=',DAC_offset)
-                #err = SetAFEOffset(0, DAC_offset, handle)
-                #time.sleep(0.1)
-
-                # top row of DT5550AFE
-                #err = SetAFEOffset(1, DAC_offset, handle)
-                #time.sleep(0.1)
-
-
-                #nloop = nloop +1
         else:
             print("Status Error")
     else:
@@ -114,16 +100,17 @@ def main(argv):
     output_file = ''
     config_file = ''
     n_event = 0
+    do_set_register = True
 
     try:
-        opts, args = getopt.getopt(argv,"hn:o:c:",["nevent=","ofile=","cfile="])
+        opts, args = getopt.getopt(argv,"hn:o:c:i",["nevent=","ofile=","cfile=","init="])
     except getopt.GetoptError:
-        print('DT5550_Readout.py -n <number of events> -o <outputfile> -c <configfile>')
+        print('DT5550_Readout.py -n <number of events> -o <outputfile> -c <configfile> -i')
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == '-h':
-            print('DT5550_Readout.py -n <number of events> -o <outputfile> -c <configfile>')
+            print('DT5550_Readout.py -n <number of events> -o <outputfile> -c <configfile> -i')
             sys.exit(2)
         elif opt in ("-o", "--ofile"):
             output_file = arg
@@ -131,11 +118,14 @@ def main(argv):
             config_file = arg
         elif opt in ("-n", "--nevent"):
             n_event = int(arg)
+        elif opt in ("-i", "--init"):
+            do_set_register = False
 
     # initialize daq
     handle = initialize_daq()
     # set the registers on the DAQ
-    set_registers(handle, config_file)
+    if do_set_register:
+        set_registers(handle, config_file)
     # start readout
     if handle != -1:
         # read data
