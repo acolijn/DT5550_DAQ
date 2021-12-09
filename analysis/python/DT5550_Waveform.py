@@ -67,20 +67,24 @@ class DT5550_Waveform:
         imin=0
         imax=1022
         fig, axs = plt.subplots(5,1, sharex=True, gridspec_kw={'height_ratios':[5,1,1,1,1]}, figsize=(15,10))
-        for idet in range(N_DETECTOR-1):
-            axs[0].plot(self.analog[idet][imin:imax])
+        for idet in range(N_DETECTOR):
+            txt = 'Channel '+str(idet)
+            axs[0].plot(self.analog[idet][imin:imax],label=txt)
             for idig in range(N_DIGITAL_OUT):
                 axs[1+idig].plot(self.digital[idig][idet][imin:imax])
-
-        if N_DETECTOR == 8:
-            for idig in range(N_DIGITAL_OUT):
-                axs[1+idig].plot(self.digital[idig][7][imin:imax])    
+        axs[0].legend(loc='upper right')
+        #if N_DETECTOR == 8:
+        #    for idig in range(N_DIGITAL_OUT):
+        #        axs[1+idig].plot(self.digital[idig][7][imin:imax])    
     
+        axs[0].set_ylabel('Analog')
         for i in range(1,5):
             axs[i].set_ylim([0,1.3])
+            txt = 'D'+str(i-1)
+            axs[i].set_ylabel(txt)
 
         plt.xlabel('time (CLK)')
         plt.show()
 
-        return
+        return fig
     
