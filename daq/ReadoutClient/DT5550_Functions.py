@@ -7,8 +7,8 @@ EVENT_LENGTH = 18
 # number of detectors
 N_DETECTOR = 8
 # termination
-TERMINATION_50OHM = 1
-TERMINATION_1MOHM = 0
+TERMINATION_50OHM = 0
+TERMINATION_1KOHM = 1
 # clock speed of DT5550
 CLK = 12.5
 
@@ -336,7 +336,7 @@ def CPACK_CP_0_GET_DATA(n_packet, timeout_ms, handle):
 
 def set_registers(handle, config_file):
 
-    print('set_registers:: Set up the registers in the DT5550')
+    print('set_registers:: Set up the registers in the DT5550. handle=',handle)
 
     # read configuration from the config_file file
     if config_file == "":
@@ -371,8 +371,8 @@ def set_registers(handle, config_file):
     termination = reg['Termination']
     if termination == TERMINATION_50OHM:
         SetAFEImpedance(TERMINATION_50OHM, handle)
-    elif termination == TERMINATION_1MOHM:
-        SetAFEImpedance(TERMINATION_1MOHM, handle)
+    elif termination == TERMINATION_1KOHM:
+        SetAFEImpedance(TERMINATION_1KOHM, handle)
     else:
         print('set_registers:: DT5550AFE:: ERROR Wrong termination chosen')
         return -1

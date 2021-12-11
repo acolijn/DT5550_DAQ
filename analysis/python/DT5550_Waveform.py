@@ -50,7 +50,7 @@ class DT5550_Waveform:
             for i in range(N_BINS):
                 i0 = i*CH_SIZE + idet*N_BINS*CH_SIZE
                 i1 = i0+CH_SIZE
-                self.analog[idet][i] = int.from_bytes(wave[i0:i1],byteorder='little') & 0x0000ffff
+                self.analog[idet][i] = int.from_bytes(wave[i0:i1],byteorder='little') & 0x00003fff
                 for idig in range(N_DIGITAL_OUT):
                     self.digital[idig][idet][i] = (int.from_bytes(wave[i0:i1],byteorder='little') >> 16+idig) & 0x00000001
 

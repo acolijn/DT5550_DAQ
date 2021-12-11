@@ -23,6 +23,7 @@ class DT5550:
         self.filename = kwargs.pop('file', 'None')
         self.fin = open(self.filename,"rb")
 
+
         self.charges = [dict() for x in range(N_DETECTOR)]
         self.Q_binwidth = 10
         
@@ -42,7 +43,6 @@ class DT5550:
         """
         Read and decode a single event
         """
-
         err = 0
         event = self.fin.read(CHUNK_SIZE)
         if not event:
@@ -90,8 +90,6 @@ class DT5550:
                 if binname not in self.charges[idet]:
                     self.charges[idet][binname] = 0
                 self.charges[idet][binname] += 1
-
-
 
         return err
     

@@ -2,8 +2,8 @@
   "version": "Rev.B",
   "comment": "just work and no play makes AP a bad boy",
   "registers": {
-    "V_offset": -0.6,
-    "Termination": 1,
+    "V_offset": 0.4,
+    "Termination": 0,
     "INTTIME": 200,
     "PREINIT": 15,
     "BLLEN": 6,
@@ -15,13 +15,13 @@
     {
       "det_id": 0,
       "GAIN": 1000,
-      "THRS": 55000,
+      "THRS": 1500,
       "INVERT": 1
     },
     {
       "det_id": 1,
       "GAIN": 1000,
-      "THRS": 55000,
+      "THRS": 1500,
       "INVERT": 1
     },
     {

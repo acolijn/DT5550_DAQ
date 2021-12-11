@@ -37,7 +37,6 @@ def read_data(filename, N_Total_Events, handle):
         #
         # start the data readout
         #
-        print('Frame status =',Frame_Status)
         if (Frame_Status >0):
             while (N_Read_Events < N_Total_Events):
                 #
@@ -123,11 +122,11 @@ def main(argv):
 
     # initialize daq
     handle = initialize_daq()
-    # set the registers on the DAQ
-    if do_set_register:
-        set_registers(handle, config_file)
-    # start readout
+
     if handle != -1:
+        # set the registers on the DAQ
+        if do_set_register:
+            set_registers(handle, config_file)
         # read data
         read_data(output_file, n_event, handle)
 
