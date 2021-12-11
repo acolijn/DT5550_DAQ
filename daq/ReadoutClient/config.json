@@ -2,7 +2,9 @@
   "version": "Rev.B",
   "comment": "just work and no play makes AP a bad boy",
   "registers": {
-    "V_offset": 0.4,
+    "V_max": 1.8,
+    "nbit_adc": 14,
+    "V_offset": 0.92,
     "Termination": 0,
     "INTTIME": 200,
     "PREINIT": 15,
@@ -15,49 +17,49 @@
     {
       "det_id": 0,
       "GAIN": 1000,
-      "THRS": 1500,
+      "THRS": 2500,
       "INVERT": 1
     },
     {
       "det_id": 1,
       "GAIN": 1000,
-      "THRS": 1500,
+      "THRS": 2500,
       "INVERT": 1
     },
     {
       "det_id": 2,
       "GAIN": 1000,
-      "THRS": 100,
+      "THRS": 2500,
       "INVERT": 1
     },
     {
       "det_id": 3,
       "GAIN": 1000,
-      "THRS": 100,
+      "THRS": 2500,
       "INVERT": 1
     },
     {
       "det_id": 4,
       "GAIN": 1000,
-      "THRS": 100,
+      "THRS": 2500,
       "INVERT": 1
     },
     {
       "det_id": 5,
       "GAIN": 1000,
-      "THRS": 100,
+      "THRS": 2500,
       "INVERT": 1
     },
     {
       "det_id": 6,
       "GAIN": 1000,
-      "THRS": 100,
+      "THRS": 2500,
       "INVERT": 1
     },
     {
       "det_id": 7,
       "GAIN": 1000,
-      "THRS": 100,
+      "THRS": 2500,
       "INVERT": 1
     }
   ],

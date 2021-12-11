@@ -354,13 +354,21 @@ def set_registers(handle, config_file):
     # DC offset for the single-ended to differential converter
     # bottom row of DT5550AFE
     V_offset = reg['V_offset']
-    V_max = 2.0
+
+    #
+    # I actually think that the maximum dV = +-0.9V (????)
+    #
+    V_max = 1.8
 
     #
     # from some repo of nuclear instruments..... funky conversion
     #
-    DAC_offset = int((V_offset+V_max)/V_max/2*(4095-1650)+1650)
+    ####DAC_offset = int((V_offset+V_max)/V_max/2*(4095-1650)+1650)
 
+    #
+    # but now I think it should be like this.....
+    #
+    DAC_offset = int(1024*V_offset/V_max*2+2048)
     # set the base addresses for the i2c controller....
     SetAFEBaseAddress(handle)
     time.sleep(0.1)
