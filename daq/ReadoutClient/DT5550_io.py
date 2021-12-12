@@ -1,4 +1,4 @@
-from DT5550_Functions import *
+#from DT5550_Functions import *
 
 import sys, getopt, time
 import json
@@ -19,7 +19,7 @@ class DT5550_io:
         self.n_event = kwargs.pop('n_event',-1)
         self.output_file = kwargs.pop('output_file','None')
         self.config_file = kwargs.pop('config_file','None')
-        self.readout_mode = kwargs.pop('mode','data') # 1. data 2. waveform 3. combined
+        #self.readout_mode = kwargs.pop('mode','data') # 1. data 2. waveform 3. combined
 
         # handle to the USB....
         #self.handle = -1
@@ -44,7 +44,7 @@ class DT5550_io:
         self.config_data = json.load(f)
         f.close()
 
-        return 0
+        return
 
     def IO_initialize_daq(self):
         """
@@ -176,7 +176,7 @@ class DT5550_io:
             REG_GAIN_SET(det_id, gain, handle)
             time.sleep(0.1)
 
-        return 0
+        return
 
     def IO_setup_oscilloscope(self, handle):
         """
@@ -216,7 +216,7 @@ class DT5550_io:
 
         print(Decimator,Pre_Trigger,Trigger_Level,Trigger_Channel,Trigger_Mode,Trigger_Edge)
 
-        return 0
+        return
 
     def IO_read_data(self, handle):
         """

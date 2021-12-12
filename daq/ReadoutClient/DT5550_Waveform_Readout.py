@@ -1,5 +1,5 @@
-#from DT5550_io import DT5550_io
 from DT5550_Functions import *
+# from DT5550_io import DT5550_io
 
 import sys, getopt, time
 import json
@@ -88,23 +88,23 @@ def main(argv):
         #
         # connect to the board and initialize the DAQ
         #
-        handle = io.initialize_daq()
+        handle = io.IO_initialize_daq()
         #
         # if we want to set the registers in the board do it here (only required once in principle)
         #
         if do_set_register:
-            io.set_registers(handle=handle)
+            io.IO_set_registers(handle=handle)
 
         #
         # setup the oscilloscope
         #
-        io.setup_oscilloscope(handle=handle)
+        io.IO_setup_oscilloscope(handle=handle)
         #
         # go and fetch the data
         #
-        io.read_waveforms(handle=handle)
+        io.IO_read_waveforms(handle=handle)
 
-    else:
+    else: # BELOW WORKS
 
         # initialize daq
         handle = initialize_daq()

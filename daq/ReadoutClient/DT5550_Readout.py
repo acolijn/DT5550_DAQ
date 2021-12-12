@@ -1,5 +1,5 @@
-#from DT5550_io import *
 from DT5550_Functions import *
+# import DT5550_io
 
 import sys, getopt, time
 import json
@@ -125,7 +125,7 @@ def main(argv):
             io.IO_set_registers()
 
         io.IO_read_data()
-    elif iopt == 1:
+    elif iopt == 1: # BELOW WORKS
         handle = initialize_daq()
         if handle != -1:
             # set the registers on the DAQ

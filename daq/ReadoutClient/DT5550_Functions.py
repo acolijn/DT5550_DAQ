@@ -1,6 +1,7 @@
 import RegisterFile
 import json, time
 from ctypes import *
+import ctypes
 
 # number of bytes per event
 EVENT_LENGTH = 18
@@ -15,7 +16,8 @@ CLK = 12.5
 #
 # load the USB3 communication library
 #
-mydll = cdll.LoadLibrary('niusb3_core.dll') 
+mydll = cdll.LoadLibrary('niusb3_core.dll')
+# mydll = ctypes.WinDLL('niusb3_core.dll')
 
 def Init():
     err = mydll.NI_USB3_Init()
