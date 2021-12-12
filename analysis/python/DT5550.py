@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import numba
+import glob,os
 
 #
 # variable needed for data decoding
@@ -20,9 +20,24 @@ class DT5550:
         :param kwargs:
         """
 
+        self.indir = kwargs.pop('indir', 'None')
         self.filename = kwargs.pop('file', 'None')
-        self.fin = open(self.filename,"rb")
+        
+        #
+        # if no filename is given we analyze all files in the directory indir
+        #
+        self.filenames = []
+        self.configfile = 'None'
 
+        if self.filename == 'None':
+            self.filenames = glob.glob(self.indir+'/data_*.raw')
+
+        else:
+            self.filenames = glob.glob(self.filename)
+            self.indir = os.path.dirname(self.filenames[0])
+
+        self.configfile = glob.glob(self.indir + '/config*.json')[0]
+        print('DT5550:: Data recorded with config: ',self.configfile)
 
         self.charges = [dict() for x in range(N_DETECTOR)]
         self.Q_binwidth = 10
@@ -39,6 +54,13 @@ class DT5550:
 
         return
 
+    def open_data(self, filename):
+        print('DT5550:: Open data file:',filename)
+        self.fin = open(filename,"rb")
+
+    def close_data(self):
+        self.fin.close()
+
     def read_event(self):
         """
         Read and decode a single event
@@ -46,7 +68,6 @@ class DT5550:
         err = 0
         event = self.fin.read(CHUNK_SIZE)
         if not event:
-            self.fin.close()
             err = -1
             return err
 

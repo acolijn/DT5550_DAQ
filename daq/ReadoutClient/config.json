@@ -4,7 +4,7 @@
   "registers": {
     "V_max": 1.8,
     "nbit_adc": 14,
-    "V_offset": 0.92,
+    "V_offset": 0.9,
     "Termination": 0,
     "INTTIME": 200,
     "PREINIT": 15,
