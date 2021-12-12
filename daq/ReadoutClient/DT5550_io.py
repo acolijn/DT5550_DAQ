@@ -5,7 +5,7 @@ import json
 import numpy as np
 
 # number of bytes per event
-EVENT_LENGTH = 18
+##EVENT_LENGTH = 18
 
 class DT5550_io:
     """
@@ -22,7 +22,7 @@ class DT5550_io:
         self.readout_mode = kwargs.pop('mode','data') # 1. data 2. waveform 3. combined
 
         # handle to the USB....
-        self.handle = -1
+        #self.handle = -1
         # read the configuration data
         self.read_configuration()
 
@@ -46,7 +46,7 @@ class DT5550_io:
 
         return 0
 
-    def initialize_daq(self):
+    def IO_initialize_daq(self):
         """
         Initilaize the DT5550 DAQ board
         """
@@ -62,22 +62,22 @@ class DT5550_io:
 
         # Initialize the board and get a handle
         Init()
-        [err, self.handle] = ConnectDevice(board)
+        [err, handle] = ConnectDevice(board)
         if (err == 0):
             print("initialize_daq:: Successful connection to board ", board)
         else:
             print("initialize_daq:: Connection Error")
             return -1
 
-        return 0
+        return handle
 
-    def set_registers(self):
+    def IO_set_registers(self, handle):
         """
         Set the control registers in the DT5550 and DT5550AFE
         :return:
         """
 
-        print('set_registers:: Set up the registers in the DT5550. handle=', self.handle)
+        print('set_registers:: Set up the registers in the DT5550. handle=', handle)
 
         # get the registers from the config file
         reg = self.config_data['registers']
@@ -101,7 +101,7 @@ class DT5550_io:
         #
         DAC_offset = int(1024 * V_offset / V_max * 2 + 2048)
         # set the base addresses for the i2c controller....
-        SetAFEBaseAddress(self.handle)
+        SetAFEBaseAddress(handle)
         time.sleep(0.1)
 
         # set the correct termination of the analog inputs
@@ -109,9 +109,9 @@ class DT5550_io:
         print('set_registers:: DT5550AFE:: Input Impedance =', reg['Termination'])
         termination = reg['Termination']
         if termination == TERMINATION_50OHM:
-            SetAFEImpedance(TERMINATION_50OHM, self.handle)
+            SetAFEImpedance(TERMINATION_50OHM, handle)
         elif termination == TERMINATION_1KOHM:
-            SetAFEImpedance(TERMINATION_1KOHM, self.handle)
+            SetAFEImpedance(TERMINATION_1KOHM, handle)
         else:
             print('set_registers:: DT5550AFE:: ERROR Wrong termination chosen')
             return -1
@@ -121,40 +121,40 @@ class DT5550_io:
         # bottom row of DT5550AFE
         print('set_registers:: DT5550AFE:: DC offset =', V_offset, 'V DAC = ', DAC_offset)
 
-        SetAFEOffset(0, DAC_offset, self.handle)
-        time.sleep(0.1)
+        SetAFEOffset(0, DAC_offset, handle)
+        time.sleep(0.3)
         # top row of DT5550AFE
-        SetAFEOffset(1, DAC_offset, self.handle)
-        time.sleep(0.1)
+        SetAFEOffset(1, DAC_offset, handle)
+        time.sleep(0.3)
 
         # set the Integration time
         print('set_registers:: Integration time =', reg['INTTIME'] * CLK, ' ns')
-        REG_INTTIME_SET(reg['INTTIME'], self.handle)
-        time.sleep(0.1)
+        REG_INTTIME_SET(reg['INTTIME'], handle)
+        time.sleep(0.3)
 
         # set the pre-integration time
         print('set_registers:: Pre-integration time =', reg['PREINIT'] * CLK, ' ns')
-        REG_PREINT_SET(reg['PREINIT'], self.handle)
+        REG_PREINT_SET(reg['PREINIT'], handle)
         time.sleep(0.1)
 
         # set the baseline length: 2^n, where n is the value entered
         print('set_registers:: Baseline length =', reg['BLLEN'], ' (see manual)')
-        REG_BLLEN_SET(reg['BLLEN'], self.handle)
+        REG_BLLEN_SET(reg['BLLEN'], handle)
         time.sleep(0.1)
 
         # set the baseline hold time
         print('set_registers:: Baseline hold time =', reg['BLHOLD'], ' (see manual)')
-        REG_BLHOLD_SET(reg['BLHOLD'], self.handle)
+        REG_BLHOLD_SET(reg['BLHOLD'], handle)
         time.sleep(0.1)
 
         # set the event window lenggth
         print('set_registers:: Event window =', reg['WINDOW'] * CLK, ' (ns)')
-        REG_WINDOW_SET(reg['WINDOW'], self.handle)
+        REG_WINDOW_SET(reg['WINDOW'], handle)
         time.sleep(0.1)
 
         # trigger mode: 0->single channel 1->two channels or more
         print('set_registers:: Tigger mode =', reg['TMODE'])
-        REG_TMODE_SET(reg['TMODE'], self.handle)
+        REG_TMODE_SET(reg['TMODE'], handle)
         time.sleep(0.1)
 
         for idet in range(N_DETECTOR):
@@ -166,19 +166,59 @@ class DT5550_io:
             # do we invert the AI or not
             print('set_registers::        id', det_id, ' THRS =', thrs, ' GAIN =', gain, ' INVERT=', invert)
 
-            REG_INVERT_SET(det_id, invert, self.handle)
+            REG_INVERT_SET(det_id, invert, handle)
             time.sleep(0.1)
             # set the detection threshold
-            REG_THRS_SET(det_id, thrs, self.handle)
+            REG_THRS_SET(det_id, thrs, handle)
             time.sleep(0.1)
 
             # set the GAIN
-            REG_GAIN_SET(det_id, gain, self.handle)
+            REG_GAIN_SET(det_id, gain, handle)
             time.sleep(0.1)
 
         return 0
 
-    def read_data(self):
+    def IO_setup_oscilloscope(self, handle):
+        """
+        Setup Oscilloscope readout mode
+        :return: 
+        """
+
+        print("setup_oscilloscope:: Setup the oscillooscope")
+        settings = self.config_data['waveform_settings']
+
+        Decimator = settings['decimator']
+        Pre_Trigger = settings['pre_trigger']
+        Trigger_Level = settings['threshold']
+        Trigger_Channel = settings['channel']
+        Trigger_Mode = settings['mode']  # "Analog"  # ""Analog" #"Free", "Analog", "Digital0", "Digital1", "Digital2", "Digital3"
+        Trigger_Edge = settings['edge']  # "Rising", "Falling"
+
+
+        if (OSCILLOSCOPE_Oscilloscope_0_SET_DECIMATOR(Decimator, handle) != 0):
+            print("Set Decimator Error")
+            exit
+        # time.sleep(0.1)
+
+        if (OSCILLOSCOPE_Oscilloscope_0_SET_PRETRIGGER(Pre_Trigger, handle) != 0):
+            print("Set PreTrigger Error")
+            exit
+        # time.sleep(0.1)
+
+        if (OSCILLOSCOPE_Oscilloscope_0_SET_TRIGGER_LEVEL(Trigger_Level, handle) != 0):
+            print("Set Trigger Level Error")
+            exit
+        # time.sleep(0.1)
+
+        if (OSCILLOSCOPE_Oscilloscope_0_SET_TRIGGER_MODE(Trigger_Mode, Trigger_Channel, Trigger_Edge, handle) != 0):
+            print("Set Trigger Mode Error")
+            exit
+
+        print(Decimator,Pre_Trigger,Trigger_Level,Trigger_Channel,Trigger_Mode,Trigger_Edge)
+
+        return 0
+
+    def IO_read_data(self, handle):
         """
         read data from the DT5550 through USB3
 
@@ -192,12 +232,12 @@ class DT5550_io:
         print("read_data:: Output written to: ",self.output_file)
         BinaryDataFile = open(self.output_file, 'wb')
 
-        if (CPACK_CP_0_RESET(self.handle) != 0):
+        if (CPACK_CP_0_RESET(handle) != 0):
             print("Reset Error!")
         else:
             print("Reset Succes....")
-        if (CPACK_CP_0_START(self.handle) == True):
-            [err, Frame_Status] = CPACK_CP_0_GET_STATUS(self.handle)
+        if (CPACK_CP_0_START(handle) == True):
+            [err, Frame_Status] = CPACK_CP_0_GET_STATUS(handle)
             #
             # give USB bus a bit of time to process this......
             #
@@ -211,8 +251,7 @@ class DT5550_io:
                     #
                     # read the frame data
                     #
-                    [err, Frame_Data, Frame_Read_Data, Frame_Valid_Data] = CPACK_CP_0_GET_DATA(N_Packet, Timeout_ms,
-                                                                                               self.handle)
+                    [err, Frame_Data, Frame_Read_Data, Frame_Valid_Data] = CPACK_CP_0_GET_DATA(N_Packet, Timeout_ms, handle)
                     #
                     # decode the FrameData:
                     #  1. find an event header
@@ -253,9 +292,63 @@ class DT5550_io:
         BinaryDataFile.close()
 
         # close the connection to the board
-        if CloseConnect(self.handle) == 0:
+        if CloseConnect(handle) == 0:
             print("Disconnect from device: SUCCES")
         else:
             print("Disconnect from device: FAIL")
 
         return 0
+
+    def IO_read_waveforms(self, handle):
+        """
+        Readout Oscilloscope waveform
+        :return:
+        """
+
+        Oscilloscope_Status = 0
+        Timeout_ms = 1000
+
+        ievent = 0
+        fout = open(self.output_file, 'wb')
+
+        # Pre_Trigger samples in oscilloscope....
+        Pre_Trigger = int(self.config_data['waveform_settings']['pre_trigger'])
+
+        print('to loop handle =',handle)
+        while (ievent < self.n_event):
+            # start reading the scope
+            print('start')
+            if (OSCILLOSCOPE_Oscilloscope_0_START(handle) == True):
+                # give the scope a small break......
+                time.sleep(0.1)
+
+                # wait for a trigger to arrive......
+                while (Oscilloscope_Status != 1):
+                    [err, Oscilloscope_Status] = OSCILLOSCOPE_Oscilloscope_0_GET_STATUS(handle)
+                    print('Status waiting for trigger ...', Oscilloscope_Status)
+                # scope finds a trigegr at a certain location in the circular buffer
+                print('get position')
+                [err, Event_Position] = OSCILLOSCOPE_Oscilloscope_0_GET_POSITION(handle)
+                # get the data.....
+                print('read data')
+                [err, Oscilloscope_Data, Oscilloscope_Read_Data, Oscilloscope_Valid_Data] = OSCILLOSCOPE_Oscilloscope_0_GET_DATA(Timeout_ms, handle)
+                # reconstruct the data from the scope
+                print('process data')
+                Processed_Data = OSCILLOSCOPE_Oscilloscope_0_RECONSTRUCT_DATA(Oscilloscope_Data, Event_Position, Pre_Trigger)
+                print('write data')
+                np.array(Processed_Data).tofile(fout)
+                if ievent % 10 == 0:
+                    print('DT5550_Waveform_Readout:: Read ', ievent, ' waveforms')
+                ievent = ievent + 1
+
+            else:
+                print("Start Error")
+
+        fout.close()
+        # close the connection to the board
+        if CloseConnect(handle) == 0:
+            print("Disconnect from device: SUCCES")
+        else:
+            print("Disconnect from device: FAIL")
+
+        return

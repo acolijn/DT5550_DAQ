@@ -1,8 +1,9 @@
+#from DT5550_io import DT5550_io
 from DT5550_Functions import *
-from ctypes import *
-import sys, getopt, json
-import numpy as np
 
+import sys, getopt, time
+import json
+import numpy as np
 
 def setup_oscilloscope(handle, config_file):
     print('setup_oscilloscope:: Set up the registers in the DT5550')
@@ -77,52 +78,80 @@ def main(argv):
         elif opt in ("-i", "--init"):
             do_set_register = False
 
-    # initialize daq
-    handle = initialize_daq()
-    # set the registers on the DAQ
-    if do_set_register:
-        set_registers(handle, config_file)
+    iopt = 1
+    if iopt == 0:
+        #
+        # instantiate object from DT5550_io class for DT5550 readout
+        #
+        io = DT5550_io(n_event=n_event, output_file=output_file, config_file=config_file)
 
+        #
+        # connect to the board and initialize the DAQ
+        #
+        handle = io.initialize_daq()
+        #
+        # if we want to set the registers in the board do it here (only required once in principle)
+        #
+        if do_set_register:
+            io.set_registers(handle=handle)
 
-    Oscilloscope_Status = 0
-    Timeout_ms = 1000
+        #
+        # setup the oscilloscope
+        #
+        io.setup_oscilloscope(handle=handle)
+        #
+        # go and fetch the data
+        #
+        io.read_waveforms(handle=handle)
 
-    ievent = 0
-    fout = open(output_file,'wb')
-
-    # setup oscilloscope... (the onluy variable needed here is the Pre_Trigger..... (ugly coding)
-    Pre_Trigger = setup_oscilloscope(handle,config_file)
-
-    while(ievent < n_event):
-        # start reading the scope
-        if (OSCILLOSCOPE_Oscilloscope_0_START(handle) == True):
-            # give the scope a small break......
-            time.sleep(0.1)
-
-            # wait for a trigger to arrive......
-            while (Oscilloscope_Status != 1):
-                [err, Oscilloscope_Status] = OSCILLOSCOPE_Oscilloscope_0_GET_STATUS(handle)
-                print('Status waiting for trigger ...',Oscilloscope_Status)
-            # scope finds a trigegr at a certain location in the circular buffer
-            [err, Event_Position] = OSCILLOSCOPE_Oscilloscope_0_GET_POSITION(handle)
-            # get the data.....
-            [err, Oscilloscope_Data, Oscilloscope_Read_Data, Oscilloscope_Valid_Data] = OSCILLOSCOPE_Oscilloscope_0_GET_DATA(Timeout_ms, handle)
-            # reconstruct the data from the scope
-            Processed_Data = OSCILLOSCOPE_Oscilloscope_0_RECONSTRUCT_DATA(Oscilloscope_Data, Event_Position, Pre_Trigger)
-            np.array(Processed_Data).tofile(fout)
-            if ievent%10 == 0:
-                print('DT5550_Waveform_Readout:: Read ',ievent,' waveforms')
-            ievent = ievent +1
-
-        else:
-            print("Start Error")
-
-    fout.close()
-    # close the connection to the board
-    if CloseConnect(handle) == 0:
-        print("Disconnect from device: SUCCES")
     else:
-        print("Disconnect from device: FAIL")
+
+        # initialize daq
+        handle = initialize_daq()
+        # set the registers on the DAQ
+        if do_set_register:
+            set_registers(handle, config_file)
+
+
+        Oscilloscope_Status = 0
+        Timeout_ms = 1000
+
+        ievent = 0
+        fout = open(output_file,'wb')
+
+        # setup oscilloscope... (the onluy variable needed here is the Pre_Trigger..... (ugly coding)
+        Pre_Trigger = setup_oscilloscope(handle,config_file)
+
+        while(ievent < n_event):
+            # start reading the scope
+            if (OSCILLOSCOPE_Oscilloscope_0_START(handle) == True):
+                # give the scope a small break......
+                time.sleep(0.1)
+
+                # wait for a trigger to arrive......
+                while (Oscilloscope_Status != 1):
+                    [err, Oscilloscope_Status] = OSCILLOSCOPE_Oscilloscope_0_GET_STATUS(handle)
+                    print('Status waiting for trigger ...',Oscilloscope_Status)
+                # scope finds a trigegr at a certain location in the circular buffer
+                [err, Event_Position] = OSCILLOSCOPE_Oscilloscope_0_GET_POSITION(handle)
+                # get the data.....
+                [err, Oscilloscope_Data, Oscilloscope_Read_Data, Oscilloscope_Valid_Data] = OSCILLOSCOPE_Oscilloscope_0_GET_DATA(Timeout_ms, handle)
+                # reconstruct the data from the scope
+                Processed_Data = OSCILLOSCOPE_Oscilloscope_0_RECONSTRUCT_DATA(Oscilloscope_Data, Event_Position, Pre_Trigger)
+                np.array(Processed_Data).tofile(fout)
+                if ievent%10 == 0:
+                    print('DT5550_Waveform_Readout:: Read ',ievent,' waveforms')
+                ievent = ievent +1
+
+            else:
+                print("Start Error")
+
+        fout.close()
+        # close the connection to the board
+        if CloseConnect(handle) == 0:
+            print("Disconnect from device: SUCCES")
+        else:
+            print("Disconnect from device: FAIL")
 
     return
 #-----------------------------------------------------------------------------------------------------------------------

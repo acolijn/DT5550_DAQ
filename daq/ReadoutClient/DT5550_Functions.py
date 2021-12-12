@@ -371,7 +371,7 @@ def set_registers(handle, config_file):
     DAC_offset = int(1024*V_offset/V_max*2+2048)
     # set the base addresses for the i2c controller....
     SetAFEBaseAddress(handle)
-    time.sleep(0.1)
+    time.sleep(0.3)
 
     # set the correct termination of the analog inputs
 
@@ -391,12 +391,10 @@ def set_registers(handle, config_file):
     print('set_registers:: DT5550AFE:: DC offset =',V_offset,'V DAC = ',DAC_offset)
 
     SetAFEOffset(0, DAC_offset, handle)
-    time.sleep(0.1)
+    time.sleep(0.3)
     # top row of DT5550AFE
     SetAFEOffset(1, DAC_offset, handle)
     time.sleep(0.1)
-
-
     # set the Integration time
     print('set_registers:: Integration time =',reg['INTTIME']*CLK,' ns')
     REG_INTTIME_SET(reg['INTTIME'], handle)
