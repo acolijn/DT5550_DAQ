@@ -6,7 +6,7 @@ def main(argv):
     MAIN CODE
     """
 
-    n_event_per_file = 10000
+    n_event_per_file = 100000
     config_file = ""
     outdir = "C:/Users/aukep/surfdrive/FineStructure/data/"
     save_waveform = False

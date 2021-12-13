@@ -68,12 +68,14 @@ class DT5550_Waveform:
     def v2adc(self,v):
         return v*2**14/1.8
     
-    def plot_waveform(self):
+    def plot_waveform(self, plot_range):
         """
         Plot the waveform
         
         :param idet: detector number
         """
+        
+        print(plot_range)
   
         # plot single event
         imin=0
@@ -83,8 +85,10 @@ class DT5550_Waveform:
         for idet in range(N_DETECTOR):
             txt = 'Channel '+str(idet)
             axs[0].plot(self.analog[idet][imin:imax],label=txt)
+            axs[0].set_xlim(plot_range)
             for idig in range(N_DIGITAL_OUT):
                 axs[1+idig].plot(self.digital[idig][idet][imin:imax])
+                axs[1+idig].set_xlim(plot_range)
         axs[0].legend(loc='upper right')
         #if N_DETECTOR == 8:
         #    for idig in range(N_DIGITAL_OUT):

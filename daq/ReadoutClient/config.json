@@ -9,57 +9,57 @@
     "INTTIME": 200,
     "PREINIT": 15,
     "BLLEN": 6,
-    "BLHOLD": 100,
+    "BLHOLD": 300,
     "WINDOW": 350,
     "TMODE": 1
   },
   "detector_settings": [
     {
       "det_id": 0,
-      "GAIN": 1000,
-      "THRS": 2500,
+      "GAIN": 418,
+      "THRS": 900,
       "INVERT": 1
     },
     {
       "det_id": 1,
-      "GAIN": 1000,
-      "THRS": 2500,
+      "GAIN": 458,
+      "THRS": 1110,
       "INVERT": 1
     },
     {
       "det_id": 2,
-      "GAIN": 1000,
-      "THRS": 2500,
+      "GAIN": 533,
+      "THRS": 842,
       "INVERT": 1
     },
     {
       "det_id": 3,
-      "GAIN": 1000,
-      "THRS": 2500,
+      "GAIN": 461,
+      "THRS": 865,
       "INVERT": 1
     },
     {
       "det_id": 4,
-      "GAIN": 1000,
-      "THRS": 2500,
+      "GAIN": 480,
+      "THRS": 865,
       "INVERT": 1
     },
     {
       "det_id": 5,
-      "GAIN": 1000,
-      "THRS": 2500,
+      "GAIN": 465,
+      "THRS": 1090,
       "INVERT": 1
     },
     {
       "det_id": 6,
-      "GAIN": 1000,
-      "THRS": 2500,
+      "GAIN": 516,
+      "THRS": 1080,
       "INVERT": 1
     },
     {
       "det_id": 7,
-      "GAIN": 1000,
-      "THRS": 2500,
+      "GAIN": 586,
+      "THRS": 1210,
       "INVERT": 1
     }
   ],
