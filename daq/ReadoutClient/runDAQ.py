@@ -43,6 +43,8 @@ def main(argv):
     #
     # create output directory
     #
+    if outdir == "":
+        outdir = r"C:\Users\aukep\surfdrive\FineStructure\data/"
     outdir = outdir + date_tag
     cmd = 'mkdir "'+outdir+'"'
     print('Create output directory:',cmd)

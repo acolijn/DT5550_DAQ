@@ -429,6 +429,7 @@ def set_registers(handle, config_file):
 
     for idet in range(N_DETECTOR):
         det_id = data['detector_settings'][idet]['det_id']
+        base = data['detector_settings'][idet]['BASE']
         thrs = data['detector_settings'][idet]['THRS']
         invert = data['detector_settings'][idet]['INVERT']
         gain = data['detector_settings'][idet]['GAIN']
@@ -438,8 +439,11 @@ def set_registers(handle, config_file):
 
         REG_INVERT_SET(det_id, invert, handle)
         time.sleep(0.1)
-        # set the detection threshold
-        REG_THRS_SET(det_id, thrs, handle)
+        # set the detection threshold: the THRS value is how high above the baseline you want the trigger to be.
+        # the baseline calculated from the baseline_calculator notebook in the analysis directory of this repo.
+        #
+        threshold = base+thrs
+        REG_THRS_SET(det_id, threshold, handle)
         time.sleep(0.1)
 
         # set the GAIN
