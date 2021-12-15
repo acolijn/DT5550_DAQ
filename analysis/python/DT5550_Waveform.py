@@ -25,10 +25,10 @@ class DT5550_Waveform:
         self.fin = open(self.filename,"rb")
         
         indir = os.path.dirname(self.filename)        
-        config_file = glob.glob(indir+'\config*.json')[0]
+        self.config_file = glob.glob(indir+'\config*.json')[0]
         
         # read the configuration file for this run
-        f = open(config_file,'r')
+        f = open(self.config_file,'r')
         self.config = json.load(f)
         f.close()
 

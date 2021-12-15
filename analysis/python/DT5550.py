@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import glob,os
+import numpy.polynomial.chebyshev as cheb
+import glob, os, json
 
 #
 # variable needed for data decoding
@@ -38,7 +39,10 @@ class DT5550:
 
         self.configfile = glob.glob(self.indir + '/config*.json')[0]
         print('DT5550:: Data recorded with config: ',self.configfile)
-
+        f = open(self.configfile)
+        self.config = json.load(f)
+        f.close()
+        
         self.charges = [dict() for x in range(N_DETECTOR)]
         self.Q_binwidth = 10
         
@@ -46,13 +50,44 @@ class DT5550:
         self.t_binwidth = 0.1
 
         # event structure
+        
+        #time
         self.t = np.zeros(N_DETECTOR)
+        #corrected time
+        self.tc = np.zeros(N_DETECTOR)
+        #
         self.Q = np.zeros(N_DETECTOR)
         self.valid = np.zeros(N_DETECTOR)
 
         self.n_event = 0
+        
+        self.cheb_param = self.config['timewalk']['chebyshev_parameters']
+        self.area_to_peak = self.config['timewalk']['area_to_peak']
+        
+        self.clock_speed = 12.5
+        self.fine_time_bins = 16
 
         return
+    
+    def timewalk_correct(self, idet):
+        
+        Q = self.Q[idet]
+        peak = Q*self.area_to_peak # always the same conversion factor
+        alpha = 0
+        if peak != 0:
+            alpha = self.config['detector_settings'][idet]['THRS'] / peak
+        else:
+            print('timewalk_correction:: WARNING peak = ',peak,' Q= ',Q,' conv = ',self.area_to_peak)
+            
+        if alpha>1:
+            alpha = 1
+        elif alpha<0:
+            alpha = 0
+            
+        dt = cheb.chebval(alpha, self.cheb_param)*self.clock_speed
+        #print('peak = ',peak,' Q =',Q,' THRS =',self.config['detector_settings'][idet]['THRS'],' alpha = ',alpha,' dt = ',dt)
+
+        return dt
 
     def open_data(self, filename):
         print('DT5550:: Open data file:',filename)
@@ -81,7 +116,7 @@ class DT5550:
             i1 = 16 + ioff
             ival0 = (int.from_bytes(event[i0:i1],byteorder='little') & 0x80)>>7
             ival1 = (int.from_bytes(event[i0:i1],byteorder='little') & 0x40)>>6
-            # print(idet,'v0',ival0,'v1',ival1)
+            #print(idet,'v0',ival0,'v1',ival1)
             #ival = (ival0 & ival1)
             ival = ival0
             
@@ -90,28 +125,35 @@ class DT5550:
             # decode time
             i0 = 8 + ioff
             i1 = 12 + ioff
-
-            self.t[idet] = int.from_bytes(event[i0:i1], byteorder='little')
-
-            # histogramming time
-            if ival:
-                binname = int(np.floor(self.t[idet] / self.t_binwidth) * self.t_binwidth)
-                if binname not in self.times[idet]:
-                    self.times[idet][binname] = 0
-                self.times[idet][binname] += 1
-
+            self.t[idet] = int.from_bytes(event[i0:i1], byteorder='little')*self.clock_speed/self.fine_time_bins
             # decode charge
             i0 = 12 + ioff
             i1 = 14 + ioff
             self.Q[idet] = int.from_bytes(event[i0:i1], byteorder='little')
 
+            if ival == 1 and self.Q[idet] ==0:
+                print('asjemenou.....')
+                
+            
+            # make the timewalk correction
+            if ival == 1:
+                dt = self.timewalk_correct(idet)
+                self.tc[idet] = self.t[idet] - dt
+            
             # dictonary with charge
             if ival:
                 binname = int(np.floor(self.Q[idet] / self.Q_binwidth) * self.Q_binwidth)
                 if binname not in self.charges[idet]:
                     self.charges[idet][binname] = 0
                 self.charges[idet][binname] += 1
+            # histogramming time
+            if ival:
+                binname = int(np.floor(self.tc[idet] / self.t_binwidth) * self.t_binwidth)
+                if binname not in self.times[idet]:
+                    self.times[idet][binname] = 0
+                self.times[idet][binname] += 1
 
+            
         return err
     
     def plot_time(self, idet, bins, plot_range, logy):
