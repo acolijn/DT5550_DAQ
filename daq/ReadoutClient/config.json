@@ -8,7 +8,7 @@
         "Termination": 0,
         "INTTIME": 200,
         "PREINIT": 15,
-        "BLLEN": 6,
+        "BLLEN": 8,
         "BLHOLD": 300,
         "WINDOW": 350,
         "TMODE": 1
@@ -16,59 +16,59 @@
     "detector_settings": [
         {
             "det_id": 0,
-            "GAIN": 414,
-            "THRS": 50,
+            "GAIN": 1000,
+            "THRS": 2000,
             "INVERT": 1,
-            "BASE": 402
+            "BASE": 393
         },
         {
             "det_id": 1,
-            "GAIN": 450,
-            "THRS": 50,
+            "GAIN": 1000,
+            "THRS": 2000,
             "INVERT": 1,
-            "BASE": 649
+            "BASE": 695
         },
         {
             "det_id": 2,
-            "GAIN": 521,
-            "THRS": 50,
+            "GAIN": 1000,
+            "THRS": 2000,
             "INVERT": 1,
-            "BASE": 342
+            "BASE": 321
         },
         {
             "det_id": 3,
-            "GAIN": 452,
-            "THRS": 50,
+            "GAIN": 1000,
+            "THRS": 2000,
             "INVERT": 1,
-            "BASE": 360
+            "BASE": 363
         },
         {
             "det_id": 4,
-            "GAIN": 411,
-            "THRS": 50,
+            "GAIN": 1000,
+            "THRS": 2000,
             "INVERT": 1,
-            "BASE": 356
+            "BASE": 358
         },
         {
             "det_id": 5,
-            "GAIN": 459,
-            "THRS": 50,
+            "GAIN": 1000,
+            "THRS": 2000,
             "INVERT": 1,
-            "BASE": 589
+            "BASE": 588
         },
         {
             "det_id": 6,
-            "GAIN": 506,
-            "THRS": 50,
+            "GAIN": 1000,
+            "THRS": 2000,
             "INVERT": 1,
             "BASE": 589
         },
         {
             "det_id": 7,
-            "GAIN": 578,
-            "THRS": 50,
+            "GAIN": 327,
+            "THRS": 2000,
             "INVERT": 1,
-            "BASE": 714
+            "BASE": 712
         }
     ],
     "waveform_settings": {

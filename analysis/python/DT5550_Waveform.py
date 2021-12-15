@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import numba
+import glob, os, json
 
 N_DETECTOR = 8
 N_BINS = 1024
@@ -23,6 +23,14 @@ class DT5550_Waveform:
 
         self.filename = kwargs.pop('file', 'None')
         self.fin = open(self.filename,"rb")
+        
+        indir = os.path.dirname(self.filename)        
+        config_file = glob.glob(indir+'\config*.json')[0]
+        
+        # read the configuration file for this run
+        f = open(config_file,'r')
+        self.config = json.load(f)
+        f.close()
 
         self.n_event = 0
         
@@ -68,6 +76,35 @@ class DT5550_Waveform:
     def v2adc(self,v):
         return v*2**14/1.8
     
+    def integrate_waveform(self, idet):
+        """
+        Integrate the waveform
+        """
+        baseline = self.config["detector_settings"][idet]["BASE"]
+        gain = self.config["detector_settings"][idet]["GAIN"]
+        inttime = self.config["registers"]["INTTIME"]
+        
+        idx = 0
+        for i in range(1023):
+            if self.digital[0,idet,i] == 1:
+                idx = i+10
+                break
+        
+        wave = (self.analog[idet,idx:idx+inttime]-baseline)#*self.digital[3,idet,:]
+        Q = (wave.sum()) / 2**16 * gain 
+        
+        return Q
+    
+    def get_peak(self,idet):
+        """
+        Get the peak value
+        """
+        baseline = self.config["detector_settings"][idet]["BASE"]
+        wave = (self.analog[idet,:]-baseline)*self.digital[3,idet,:]
+        peak = wave.max()
+        
+        return peak
+    
     def plot_waveform(self, plot_range):
         """
         Plot the waveform
@@ -82,12 +119,26 @@ class DT5550_Waveform:
         imax=1022
         fig, axs = plt.subplots(5,1, sharex=True, gridspec_kw={'height_ratios':[5,1,1,1,1]}, figsize=(15,10))
         
+        Q = np.zeros([N_DETECTOR])
+        Pk = np.zeros([N_DETECTOR])
         for idet in range(N_DETECTOR):
-            txt = 'Channel '+str(idet)
-            axs[0].plot(self.analog[idet][imin:imax],label=txt)
+            #
+            # integrate waveform
+            #
+            Q[idet] = self.integrate_waveform(idet)
+            Pk[idet] = self.get_peak(idet)
+            
+            Ratio = 0
+            if Q[idet] != 0:
+                Ratio = Pk[idet]/Q[idet]
+            
+            txt = 'CH '+str(idet)+' Q='+str(Q[idet])+' Pk='+str(Pk[idet])+' Ratio = '+str((Ratio))
+                                                                    
+            axs[0].plot(self.analog[idet][imin:imax]-
+                        self.config["detector_settings"][idet]["BASE"],label=txt,drawstyle='steps')
             axs[0].set_xlim(plot_range)
             for idig in range(N_DIGITAL_OUT):
-                axs[1+idig].plot(self.digital[idig][idet][imin:imax])
+                axs[1+idig].plot(self.digital[idig][idet][imin:imax],drawstyle='steps')
                 axs[1+idig].set_xlim(plot_range)
         axs[0].legend(loc='upper right')
         #if N_DETECTOR == 8:
@@ -95,9 +146,11 @@ class DT5550_Waveform:
         #        axs[1+idig].plot(self.digital[idig][7][imin:imax])    
     
         axs[0].set_ylabel('Analog (ADC)')
+        #axs[0].set_ylim([-20,20])
         secax = axs[0].secondary_yaxis('right',functions=(self.adc2v,self.v2adc))
         secax.set_color('green')
         secax.set_ylabel('Analog (V)')
+        
         
         for i in range(1,5):
             axs[i].set_ylim([0,1.3])
