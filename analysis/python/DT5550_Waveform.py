@@ -6,6 +6,8 @@ N_DETECTOR = 8
 N_BINS = 1024
 N_DIGITAL_OUT = 4
 CH_SIZE = 4 # 4 - bytes per channel
+MAX14BIT = 16383
+MAX16BIT = 65535
 
 #
 # variable needed for data decoding
@@ -71,10 +73,10 @@ class DT5550_Waveform:
         return err
     
     def adc2v(self,adc):
-        return adc/2**14*1.8
+        return adc/MAX14BIT*1.8
     
     def v2adc(self,v):
-        return v*2**14/1.8
+        return v*MAX14BIT/1.8
     
     def integrate_waveform(self, idet):
         """
@@ -91,7 +93,7 @@ class DT5550_Waveform:
                 break
         
         wave = (self.analog[idet,idx:idx+inttime]-baseline)#*self.digital[3,idet,:]
-        Q = (wave.sum()) / 2**16 * gain 
+        Q = (wave.sum()) / MAX16BIT * gain
         
         return Q
     
@@ -117,7 +119,7 @@ class DT5550_Waveform:
         # plot single event
         imin=0
         imax=1022
-        fig, axs = plt.subplots(5,1, sharex=True, gridspec_kw={'height_ratios':[5,1,1,1,1]}, figsize=(15,10))
+        fig, axs = plt.subplots(5,1, sharex=True, gridspec_kw={'height_ratios':[5,2,2,2,2]}, figsize=(15,10))
         
         Q = np.zeros([N_DETECTOR])
         Pk = np.zeros([N_DETECTOR])
@@ -132,8 +134,8 @@ class DT5550_Waveform:
             if Q[idet] != 0:
                 Ratio = Pk[idet]/Q[idet]
             
-            txt = 'CH '+str(idet)+' Q='+str(Q[idet])+' Pk='+str(Pk[idet])+' Ratio = '+str((Ratio))
-                                                                    
+            #txt = 'CH '+str(idet)+' Q='+str(Q[idet])+' Pk='+str(Pk[idet])+' Ratio = '+str((Ratio))
+            txt = 'CH {:1d} Q = {:>5.1f} Pk = {:>5.1f} Ratio = {:>5.2f}'.format(idet,Q[idet],Pk[idet],Ratio)
             axs[0].plot(self.analog[idet][imin:imax]-
                         self.config["detector_settings"][idet]["BASE"],label=txt,drawstyle='steps')
             axs[0].set_xlim(plot_range)
