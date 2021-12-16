@@ -19,7 +19,7 @@
             "GAIN": 1000,
             "THRS": 2000,
             "INVERT": 1,
-            "BASE": 393
+            "BASE": 392
         },
         {
             "det_id": 1,
