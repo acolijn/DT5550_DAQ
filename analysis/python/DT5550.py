@@ -1,14 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import numpy.polynomial.chebyshev as cheb
-import glob, os, json
+import glob
+import os
+import json
 
 #
 # variable needed for data decoding
 #
-CHUNK_SIZE = 72 # bytes
-CHANNEL_SIZE = 8 # bytes per channel
-N_DETECTOR = 8# number of detectors
+CHUNK_SIZE = 72  # bytes
+CHANNEL_SIZE = 8  # bytes per channel
+N_DETECTOR = 8  # number of detectors
+
 
 class DT5550:
     """
@@ -28,6 +31,7 @@ class DT5550:
         # if no filename is given we analyze all files in the directory indir
         #
         self.filenames = []
+        self.fin = ''
         self.configfile = 'None'
 
         if self.filename == 'None':
@@ -38,22 +42,22 @@ class DT5550:
             self.indir = os.path.dirname(self.filenames[0])
 
         self.configfile = glob.glob(self.indir + '/config*.json')[0]
-        print('DT5550:: Data recorded with config: ',self.configfile)
+        print('DT5550:: Data recorded with config: ', self.configfile)
         f = open(self.configfile)
         self.config = json.load(f)
         f.close()
         
-        self.charges = [dict() for x in range(N_DETECTOR)]
+        self.charges = [dict() for _ in range(N_DETECTOR)]
         self.Q_binwidth = 10
         
-        self.times = [dict() for x in range(N_DETECTOR)]
+        self.times = [dict() for _ in range(N_DETECTOR)]
         self.t_binwidth = 0.1
 
         # event structure
         
-        #time
+        # time
         self.t = np.zeros(N_DETECTOR)
-        #corrected time
+        # corrected time
         self.tc = np.zeros(N_DETECTOR)
         #
         self.Q = np.zeros(N_DETECTOR)
@@ -72,26 +76,27 @@ class DT5550:
     def timewalk_correct(self, idet):
         
         Q = self.Q[idet]
-        peak = Q*self.area_to_peak # always the same conversion factor
+        peak = Q*self.area_to_peak  # always the same conversion factor
         alpha = 0
         if peak != 0:
             alpha = self.config['detector_settings'][idet]['THRS'] / peak
-        #else:
+        # else:
         #    print('timewalk_correction:: WARNING peak = ',peak,' Q= ',Q,' conv = ',self.area_to_peak)
             
-        if alpha>1:
+        if alpha > 1:
             alpha = 1
-        elif alpha<0:
+        elif alpha < 0:
             alpha = 0
             
         dt = cheb.chebval(alpha, self.cheb_param)*self.clock_speed
-        #print('peak = ',peak,' Q =',Q,' THRS =',self.config['detector_settings'][idet]['THRS'],' alpha = ',alpha,' dt = ',dt)
+        # print('peak = ',peak,' Q =',Q,' THRS =',self.config['detector_settings'][idet]['THRS'],
+        # ' alpha = ',alpha,' dt = ',dt)
 
         return dt
 
     def open_data(self, filename):
-        print('DT5550:: Open data file:',filename)
-        self.fin = open(filename,"rb")
+        print('DT5550:: Open data file:', filename)
+        self.fin = open(filename, "rb")
 
     def close_data(self):
         self.fin.close()
@@ -114,10 +119,10 @@ class DT5550:
             # decode valid bit
             i0 = 15 + ioff
             i1 = 16 + ioff
-            ival0 = (int.from_bytes(event[i0:i1],byteorder='little') & 0x80)>>7
-            ival1 = (int.from_bytes(event[i0:i1],byteorder='little') & 0x40)>>6
-            #print(idet,'v0',ival0,'v1',ival1)
-            #ival = (ival0 & ival1)
+            ival0 = (int.from_bytes(event[i0:i1], byteorder='little') & 0x80) >> 7
+            # ival1 = (int.from_bytes(event[i0:i1], byteorder='little') & 0x40) >> 6
+            # print(idet,'v0',ival0,'v1',ival1)
+            # ival = (ival0 & ival1)
             ival = ival0
             
             self.valid[idet] = ival
@@ -133,8 +138,7 @@ class DT5550:
 
             #if ival == 1 and self.Q[idet] ==0:
             #    print('asjemenou.....')
-                
-            
+
             # make the timewalk correction
             if ival == 1:
                 dt = self.timewalk_correct(idet)
@@ -153,7 +157,6 @@ class DT5550:
                     self.times[idet][binname] = 0
                 self.times[idet][binname] += 1
 
-            
         return err
     
     def plot_time(self, idet, bins, plot_range, logy):
@@ -161,6 +164,9 @@ class DT5550:
         Plot the charge
         
         :param idet: detector number
+        :param bins: number of bins
+        :param plot_range: range of the plot
+        :param logy: logarithmic plot or not
         """
         
         mylist = [key for key, val in self.times[idet].items() for _ in range(val)]
@@ -168,8 +174,8 @@ class DT5550:
         if plot_range[0] == -1:
             plot_range = (0, max(mylist))
         
-        plt.hist(mylist,bins=bins, range=plot_range)
-        plt.title("id ="+str(idet),x=0.9,y=0.85)
+        plt.hist(mylist, bins=bins, range=plot_range)
+        plt.title("id ="+str(idet), x=0.9, y=0.85)
         if logy:
             plt.yscale('log')
         else:
@@ -182,19 +188,20 @@ class DT5550:
     def plot_charge(self, idet, bins, plot_range, logy):
         """
         Plot the charge
-        
+
         :param idet: detector number
+        :param bins: number of bins
+        :param plot_range: range of the plot
+        :param logy: logarithmic plot or not
         """
 
-        
         mylist = [key for key, val in self.charges[idet].items() for _ in range(val)]
         
         if plot_range[0] == -1:
             plot_range = (0, max(mylist))
 
-
-        plt.hist(mylist,bins=bins, range=plot_range)
-        plt.title("id ="+str(idet),x=0.9,y=0.85)
+        plt.hist(mylist, bins=bins, range=plot_range)
+        plt.title("id ="+str(idet), x=0.9, y=0.85)
         if logy:
             plt.yscale('log')
         else:
@@ -215,20 +222,19 @@ class DT5550:
         :param **kwargs: range (min,max)
         :param **kwargs: logy (default = False)
         """        
-        plot_type = kwargs.pop('type','charge')
-        plot_range = kwargs.pop('range',(-1,-1))
-        bins = kwargs.pop('bins',100)
-        logy = kwargs.pop('logy',False)
+        plot_type = kwargs.pop('type', 'charge')
+        plot_range = kwargs.pop('range', (-1, -1))
+        bins = kwargs.pop('bins', 100)
+        logy = kwargs.pop('logy', False)
 
-
-        fig = plt.figure(figsize=(10,15))
+        plt.figure(figsize=(10, 15))
 
         for idet in range(N_DETECTOR):
             plt.subplot(4, 2, 1+idet)
             if plot_type == "charge":
-                self.plot_charge(idet,bins=bins,plot_range=plot_range, logy=logy)
+                self.plot_charge(idet, bins=bins, plot_range=plot_range, logy=logy)
             elif plot_type == "time":
-                self.plot_time(idet,bins=bins,plot_range=plot_range, logy=logy)
+                self.plot_time(idet, bins=bins, plot_range=plot_range, logy=logy)
    
         plt.show()
 
