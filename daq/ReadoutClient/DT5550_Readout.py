@@ -2,8 +2,6 @@ from DT5550_Functions import *
 # import DT5550_io
 
 import sys, getopt, time
-import json
-import numpy as np
 
 def read_data(output_file, n_event, handle):
     """

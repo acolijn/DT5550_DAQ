@@ -1,6 +1,6 @@
 from DT5550_Functions import *
 # from DT5550_io import DT5550_io
-
+import matplotlib.pyplot as plt
 import sys, getopt, time
 import json
 import numpy as np
