@@ -76,8 +76,8 @@ class DT5550:
         alpha = 0
         if peak != 0:
             alpha = self.config['detector_settings'][idet]['THRS'] / peak
-        else:
-            print('timewalk_correction:: WARNING peak = ',peak,' Q= ',Q,' conv = ',self.area_to_peak)
+        #else:
+        #    print('timewalk_correction:: WARNING peak = ',peak,' Q= ',Q,' conv = ',self.area_to_peak)
             
         if alpha>1:
             alpha = 1
@@ -131,8 +131,8 @@ class DT5550:
             i1 = 14 + ioff
             self.Q[idet] = int.from_bytes(event[i0:i1], byteorder='little')
 
-            if ival == 1 and self.Q[idet] ==0:
-                print('asjemenou.....')
+            #if ival == 1 and self.Q[idet] ==0:
+            #    print('asjemenou.....')
                 
             
             # make the timewalk correction

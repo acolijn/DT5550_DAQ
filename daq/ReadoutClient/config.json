@@ -1,5 +1,6 @@
 {
-    "version": "Rev.B",
+    "version": "Rev.C",
+    "source": "Na22",
     "comment": "just work and no play makes AP a bad boy",
     "registers": {
         "V_max": 1.8,
@@ -16,57 +17,57 @@
     "detector_settings": [
         {
             "det_id": 0,
-            "GAIN": 1000,
-            "THRS": 2000,
+            "GAIN": 400,
+            "THRS": 200,
             "INVERT": 1,
-            "BASE": 392
+            "BASE": 398
         },
         {
             "det_id": 1,
-            "GAIN": 1000,
-            "THRS": 2000,
+            "GAIN": 446,
+            "THRS": 200,
             "INVERT": 1,
-            "BASE": 695
+            "BASE": 654
         },
         {
             "det_id": 2,
-            "GAIN": 1000,
-            "THRS": 2000,
+            "GAIN": 518,
+            "THRS": 200,
             "INVERT": 1,
-            "BASE": 321
+            "BASE": 345
         },
         {
             "det_id": 3,
-            "GAIN": 1000,
-            "THRS": 2000,
+            "GAIN": 448,
+            "THRS": 200,
             "INVERT": 1,
-            "BASE": 363
+            "BASE": 364
         },
         {
             "det_id": 4,
-            "GAIN": 1000,
-            "THRS": 2000,
+            "GAIN": 346,
+            "THRS": 200,
             "INVERT": 1,
-            "BASE": 358
+            "BASE": 366
         },
         {
             "det_id": 5,
-            "GAIN": 1000,
-            "THRS": 2000,
-            "INVERT": 1,
-            "BASE": 588
-        },
-        {
-            "det_id": 6,
-            "GAIN": 1000,
-            "THRS": 2000,
+            "GAIN": 457,
+            "THRS": 200,
             "INVERT": 1,
             "BASE": 589
         },
         {
+            "det_id": 6,
+            "GAIN": 504,
+            "THRS": 200,
+            "INVERT": 1,
+            "BASE": 596
+        },
+        {
             "det_id": 7,
-            "GAIN": 327,
-            "THRS": 2000,
+            "GAIN": 577,
+            "THRS": 200,
             "INVERT": 1,
             "BASE": 712
         }

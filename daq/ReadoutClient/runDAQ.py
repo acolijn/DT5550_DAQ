@@ -8,7 +8,7 @@ def main(argv):
 
     n_event_per_file = 100000
     config_file = ""
-    outdir = "C:/Users/aukep/surfdrive/FineStructure/data/"
+    outdir = "C:/data/"
     save_waveform = False
 
     try:
@@ -44,7 +44,7 @@ def main(argv):
     # create output directory
     #
     if outdir == "":
-        outdir = r"C:\Users\aukep\surfdrive\FineStructure\data/"
+        outdir = r"C:\data/"
     outdir = outdir + date_tag
     cmd = 'mkdir "'+outdir+'"'
     print('Create output directory:',cmd)
