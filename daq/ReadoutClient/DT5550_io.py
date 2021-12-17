@@ -13,7 +13,6 @@ class DT5550_io:
     """
     def __init__(self, **kwargs):
         """
-
         :param kwargs:
         """
         self.n_event = kwargs.pop('n_event',-1)
