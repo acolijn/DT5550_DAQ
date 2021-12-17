@@ -13,64 +13,75 @@
         "BLHOLD": 300,
         "WINDOW": 350,
         "TMODE": 0,
-        "EMIN": 1000
+        "EMIN": 1500
     },
     "detector_settings": [
         {
             "det_id": 0,
             "GAIN": 400,
-            "THRS": 200,
+            "THRS": 100,
             "INVERT": 1,
-            "BASE": 398
+            "BASE": 398,
+            "TOFF": 0
         },
         {
             "det_id": 1,
             "GAIN": 446,
-            "THRS": 200,
+            "THRS": 100,
             "INVERT": 1,
-            "BASE": 654
+            "BASE": 654,
+            "TOFF": 10
         },
         {
             "det_id": 2,
             "GAIN": 518,
-            "THRS": 200,
+            "THRS": 100,
             "INVERT": 1,
-            "BASE": 345
+            "BASE": 345,
+            "TOFF": 22
         },
         {
             "det_id": 3,
             "GAIN": 448,
-            "THRS": 200,
+            "THRS": 100,
             "INVERT": 1,
-            "BASE": 364
+            "BASE": 364,
+            "TOFF": 12
         },
         {
             "det_id": 4,
             "GAIN": 346,
-            "THRS": 200,
+            "THRS": 100,
             "INVERT": 1,
-            "BASE": 366
+            "BASE": 366,
+            "TOFF": 32
+
         },
         {
             "det_id": 5,
             "GAIN": 457,
-            "THRS": 200,
+            "THRS": 100,
             "INVERT": 1,
-            "BASE": 589
+            "BASE": 589,
+            "TOFF": 12
+
         },
         {
             "det_id": 6,
             "GAIN": 504,
-            "THRS": 200,
+            "THRS": 100,
             "INVERT": 1,
-            "BASE": 596
+            "BASE": 596,
+            "TOFF": 13
+
         },
         {
             "det_id": 7,
             "GAIN": 577,
-            "THRS": 200,
+            "THRS": 100,
             "INVERT": 1,
-            "BASE": 712
+            "BASE": 712,
+            "TOFF": 9
         }
     ],
     "waveform_settings": {

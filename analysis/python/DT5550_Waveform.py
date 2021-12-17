@@ -11,6 +11,8 @@ CH_SIZE = 4  # 4 - bytes per channel
 MAX14BIT = 16383
 MAX16BIT = 65535
 
+NCHANNEL_OSC = 9
+
 #
 # variable needed for data decoding
 #
@@ -40,8 +42,8 @@ class DT5550_Waveform:
 
         self.n_event = 0
         
-        self.analog  = np.zeros([N_DETECTOR, N_BINS])
-        self.digital = np.zeros([N_DIGITAL_OUT, N_DETECTOR, N_BINS])
+        self.analog  = np.zeros([NCHANNEL_OSC, N_BINS])
+        self.digital = np.zeros([N_DIGITAL_OUT, NCHANNEL_OSC, N_BINS])
 
         return
 
@@ -51,7 +53,7 @@ class DT5550_Waveform:
         """
 
         err = 0
-        wave = self.fin.read(N_BINS*N_DETECTOR*CH_SIZE)
+        wave = self.fin.read(N_BINS*NCHANNEL_OSC*CH_SIZE)
 
         if not wave:
             self.fin.close()
@@ -60,7 +62,7 @@ class DT5550_Waveform:
 
         self.n_event = self.n_event+1
 
-        for idet in range(N_DETECTOR):
+        for idet in range(NCHANNEL_OSC):
             max_ch = 0
             min_ch = 9999999
             for i in range(N_BINS-2):
@@ -123,7 +125,7 @@ class DT5550_Waveform:
         # plot single event
         imin = 0
         imax = 1022
-        fig, axs = plt.subplots(5, 1, sharex=True, gridspec_kw={'height_ratios': [5, 2, 2, 2, 2]}, figsize=(15, 10))
+        fig, axs = plt.subplots(5, 1, sharex=True, gridspec_kw={'height_ratios': [5, 1.5, 1.5, 1.5, 1.5]}, figsize=(15, 10))
         
         Q = np.zeros([N_DETECTOR])
         Pk = np.zeros([N_DETECTOR])
@@ -146,6 +148,13 @@ class DT5550_Waveform:
             for idig in range(N_DIGITAL_OUT):
                 axs[1+idig].plot(self.digital[idig][idet][imin:imax], drawstyle='steps')
                 axs[1+idig].set_xlim(plot_range)
+
+        # plot channel #8 with trigger info as well
+        for idig in range(N_DIGITAL_OUT):
+            print(self.digital[idig][8][imin:imax])
+            axs[1 + idig].plot(self.digital[idig][8][imin:imax], drawstyle='steps')
+            axs[1 + idig].set_xlim(plot_range)
+
         axs[0].legend(loc='upper right')
         # if N_DETECTOR == 8:
         #    for idig in range(N_DIGITAL_OUT):
@@ -158,7 +167,7 @@ class DT5550_Waveform:
         secax.set_ylabel('Analog (V)')
         
         for i in range(1, 5):
-            axs[i].set_ylim([0, 1.3])
+            axs[i].set_ylim([-0.1, 1.1])
             txt = 'D'+str(i-1)
             axs[i].set_ylabel(txt)
 
