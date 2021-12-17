@@ -12,7 +12,8 @@
         "BLLEN": 8,
         "BLHOLD": 300,
         "WINDOW": 350,
-        "TMODE": 1
+        "TMODE": 0,
+        "EMIN": 1000
     },
     "detector_settings": [
         {

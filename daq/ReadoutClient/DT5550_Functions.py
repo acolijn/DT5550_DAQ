@@ -12,6 +12,8 @@ TERMINATION_50OHM = 0
 TERMINATION_1KOHM = 1
 # clock speed of DT5550
 CLK = 12.5
+# number of oscilloscope channels
+NCHANNEL_OSC = 9
 
 #
 # load the USB3 communication library
@@ -160,6 +162,10 @@ def REG_TSIN_SET(data, handle):
     err = __abstracted_reg_write(data, RegisterFile.SCI_REG_TSIN, handle)
     return err
 
+def REG_EMIN_SET(data, handle):
+    err = __abstracted_reg_write(data, RegisterFile.SCI_REG_EMIN, handle)
+    return err
+
 def REG_WINDOW_GET(handle):
     [err, data] = __abstracted_reg_read(RegisterFile.SCI_REG_WINDOW, handle)
     return err, data
@@ -266,11 +272,11 @@ def OSCILLOSCOPE_Oscilloscope_0_GET_POSITION(handle):
     return err, position
 
 def OSCILLOSCOPE_Oscilloscope_0_GET_DATA(timeout_ms, handle):
-    [err, data, read_data, valid_data] = __abstracted_mem_read(8*1024, RegisterFile.SCI_REG_Oscilloscope_0_FIFOADDRESS, timeout_ms, handle)
+    [err, data, read_data, valid_data] = __abstracted_mem_read(NCHANNEL_OSC*1024, RegisterFile.SCI_REG_Oscilloscope_0_FIFOADDRESS, timeout_ms, handle)
     return err, data, read_data, valid_data
 
 def OSCILLOSCOPE_Oscilloscope_0_RECONSTRUCT_DATA(OscilloscopeData, OscilloscopePosition, OscilloscopePreTrigger):
-    OscilloscopeChannels = 8
+    OscilloscopeChannels = NCHANNEL_OSC
     OscilloscopeSamples = 1024
     Analog = list(range(OscilloscopeSamples*OscilloscopeChannels))
 
@@ -425,6 +431,11 @@ def set_registers(handle, config_file):
     # trigger mode: 0->single channel 1->two channels or more
     print('set_registers:: Tigger mode =',reg['TMODE'])
     REG_TMODE_SET(reg['TMODE'], handle)
+    time.sleep(0.1)
+
+    # trigger mode: 0->single channel 1->two channels or more
+    print('set_registers:: Energy threshold for the Energy trigger =',reg['EMIN'])
+    REG_EMIN_SET(reg['EMIN'], handle)
     time.sleep(0.1)
 
     for idet in range(N_DETECTOR):
