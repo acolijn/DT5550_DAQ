@@ -95,7 +95,7 @@ def main(argv):
     do_set_register = True
 
     try:
-        opts, args = getopt.getopt(argv,"hn:o:c:i",["nevent=","ofile=","cfile=","init="])
+        opts, args = getopt.getopt(argv, "hn:o:c:i", ["nevent=", "ofile=", "cfile=", "init="])
     except getopt.GetoptError:
         print('DT5550_Readout.py -n <number of events> -o <outputfile> -c <configfile> -i')
         sys.exit(2)
@@ -113,24 +113,36 @@ def main(argv):
         elif opt in ("-i", "--init"):
             do_set_register = False
 
-    iopt = 1
+    #iopt = 1
+    #
+    # if iopt == 0:
+    #     io = DT5550_io(n_event=n_event, output_file=output_file, config_file=config_file)
+    #
+    #     io.IO_initialize_daq()
+    #     if do_set_register:
+    #         io.IO_set_registers()
+    #
+    #     io.IO_read_data()
+    # elif iopt == 1:
 
-    if iopt == 0:
-        io = DT5550_io(n_event=n_event, output_file=output_file, config_file=config_file)
+    handle = -1
 
-        io.IO_initialize_daq()
-        if do_set_register:
-            io.IO_set_registers()
-
-        io.IO_read_data()
-    elif iopt == 1: # BELOW WORKS
+    ntry = 0
+    # try to init the DAQ 3x. If the handle still equals -1..... bad luck.
+    while ntry < 3:
         handle = initialize_daq()
-        if handle != -1:
-            # set the registers on the DAQ
-            if do_set_register:
-                set_registers(handle, config_file)
-            # read data
-            read_data(output_file, n_event, handle)
+        if handle == -1:
+            time.sleep(1.0)
+            ntry = ntry + 1
+        else:
+            break
+
+    if handle != -1:
+        # set the registers on the DAQ
+        if do_set_register:
+            set_registers(handle, config_file)
+        # read data
+        read_data(output_file, n_event, handle)
 
     print("Exit DAQ")
 #-----------------------------------------------------------------------------------------------------------------------
