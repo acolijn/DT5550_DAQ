@@ -61,6 +61,8 @@ class DT5550:
         self.tc = np.zeros(N_DETECTOR)
         #
         self.Q = np.zeros(N_DETECTOR)
+        self.Qold = np.zeros(N_DETECTOR)
+
         self.valid = np.zeros(N_DETECTOR)
 
         self.n_event = 0
@@ -105,6 +107,9 @@ class DT5550:
         """
         Read and decode a single event
         """
+        for idet in range(N_DETECTOR):
+            self.Qold[idet] = self.Q[idet]
+        
         err = 0
         event = self.fin.read(CHUNK_SIZE)
         if not event:
@@ -135,6 +140,9 @@ class DT5550:
             i0 = 12 + ioff
             i1 = 14 + ioff
             self.Q[idet] = int.from_bytes(event[i0:i1], byteorder='little')
+            
+            if idet == 4:
+                self.Q[idet] = self.Q[idet]*0.80 # watch out ----- remove this line soon
 
             #if ival == 1 and self.Q[idet] ==0:
             #    print('asjemenou.....')
