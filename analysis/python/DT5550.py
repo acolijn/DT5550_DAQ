@@ -140,9 +140,6 @@ class DT5550:
             i0 = 12 + ioff
             i1 = 14 + ioff
             self.Q[idet] = int.from_bytes(event[i0:i1], byteorder='little')
-            
-            if idet == 4:
-                self.Q[idet] = self.Q[idet]*0.80 # watch out ----- remove this line soon
 
             #if ival == 1 and self.Q[idet] ==0:
             #    print('asjemenou.....')

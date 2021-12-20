@@ -166,6 +166,10 @@ def REG_EMIN_SET(data, handle):
     err = __abstracted_reg_write(data, RegisterFile.SCI_REG_EMIN, handle)
     return err
 
+def REG_NMIN_SET(data, handle):
+    err = __abstracted_reg_write(data, RegisterFile.SCI_REG_NMIN, handle)
+    return err
+
 def REG_WINDOW_GET(handle):
     [err, data] = __abstracted_reg_read(RegisterFile.SCI_REG_WINDOW, handle)
     return err, data
@@ -396,7 +400,7 @@ def set_registers(handle, config_file):
     # set the DDC offsets
 
     # bottom row of DT5550AFE
-    print('set_registers:: DT5550AFE:: DC offset =',V_offset,'V DAC = ',DAC_offset)
+    print('set_registers:: DT5550AFE:: DC offset =', V_offset, 'V DAC = ', DAC_offset)
 
     SetAFEOffset(0, DAC_offset, handle)
     time.sleep(0.3)
@@ -404,38 +408,43 @@ def set_registers(handle, config_file):
     SetAFEOffset(1, DAC_offset, handle)
     time.sleep(0.1)
     # set the Integration time
-    print('set_registers:: Integration time =',reg['INTTIME']*CLK,' ns')
+    print('set_registers:: Integration time =', reg['INTTIME']*CLK, ' ns')
     REG_INTTIME_SET(reg['INTTIME'], handle)
     time.sleep(0.1)
 
     # set the pre-integration time
-    print('set_registers:: Pre-integration time =',reg['PREINIT']*CLK,' ns')
+    print('set_registers:: Pre-integration time =', reg['PREINIT']*CLK, ' ns')
     REG_PREINT_SET(reg['PREINIT'], handle)
     time.sleep(0.1)
 
     # set the baseline length: 2^n, where n is the value entered
-    print('set_registers:: Baseline length =',reg['BLLEN'],' (see manual)')
+    print('set_registers:: Baseline length =', reg['BLLEN'], ' (see manual)')
     REG_BLLEN_SET(reg['BLLEN'], handle)
     time.sleep(0.1)
 
     # set the baseline hold time
-    print('set_registers:: Baseline hold time =',reg['BLHOLD'],' (see manual)')
+    print('set_registers:: Baseline hold time =', reg['BLHOLD'], ' (see manual)')
     REG_BLHOLD_SET(reg['BLHOLD'], handle)
     time.sleep(0.1)
 
     # set the event window lenggth
-    print('set_registers:: Event window =',reg['WINDOW']*CLK,' (ns)')
+    print('set_registers:: Event window =', reg['WINDOW']*CLK,' (ns)')
     REG_WINDOW_SET(reg['WINDOW'], handle)
     time.sleep(0.1)
 
-    # trigger mode: 0->single channel 1->two channels or more
-    print('set_registers:: Tigger mode =',reg['TMODE'])
+    # trigger mode: 0->single channel 1->two channels or more (OBSOLETE)
+    print('set_registers:: Tigger mode =', reg['TMODE'])
     REG_TMODE_SET(reg['TMODE'], handle)
     time.sleep(0.1)
 
-    # trigger mode: 0->single channel 1->two channels or more
-    print('set_registers:: Energy threshold for the Energy trigger =',reg['EMIN'])
+    # trigger: minimum energy
+    print('set_registers:: Energy threshold for the Energy trigger =', reg['EMIN'])
     REG_EMIN_SET(reg['EMIN'], handle)
+    time.sleep(0.1)
+
+    # trigger: minimum number of channels
+    print('set_registers:: Minimal number of detector hit =', reg['NMIN'])
+    REG_NMIN_SET(reg['NMIN'], handle)
     time.sleep(0.1)
 
     for idet in range(N_DETECTOR):
@@ -446,7 +455,7 @@ def set_registers(handle, config_file):
         gain = data['detector_settings'][idet]['GAIN']
 
         # do we invert the AI or not
-        print('set_registers::        id',det_id,' THRS =',thrs,' GAIN =',gain,' INVERT=',invert )
+        print('set_registers::        id', det_id, ' THRS =', thrs, ' GAIN =', gain, ' INVERT=', invert)
 
         REG_INVERT_SET(det_id, invert, handle)
         time.sleep(0.1)
