@@ -31,7 +31,7 @@
             "THRS": 100,
             "INVERT": 1,
             "BASE": 654,
-            "TOFF": 10
+            "TOFF": 17.5
         },
         {
             "det_id": 2,
@@ -39,7 +39,7 @@
             "THRS": 100,
             "INVERT": 1,
             "BASE": 345,
-            "TOFF": 22
+            "TOFF": 4
         },
         {
             "det_id": 3,
@@ -47,7 +47,7 @@
             "THRS": 100,
             "INVERT": 1,
             "BASE": 364,
-            "TOFF": 12
+            "TOFF": 12.5
         },
         {
             "det_id": 4,
@@ -55,7 +55,7 @@
             "THRS": 100,
             "INVERT": 1,
             "BASE": 366,
-            "TOFF": 32
+            "TOFF": -2
 
         },
         {
@@ -64,7 +64,7 @@
             "THRS": 100,
             "INVERT": 1,
             "BASE": 589,
-            "TOFF": 12
+            "TOFF": 11.5
 
         },
         {

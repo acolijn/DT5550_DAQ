@@ -73,7 +73,10 @@ class DT5550:
         self.clock_speed = 12.5
         self.fine_time_bins = 16
         
-        self.tcorr = np.array([0,-17.5,-4,-12.5,+2,-11.5,-10,-16])
+        self.toff = np.zeros([N_DETECTOR])
+        for i in range(N_DETECTOR):
+            self.toff[i] = self.config['detector_settings'][i]['TOFF']
+            #print(i,'TOFF = ',self.toff[i])
 
         return
     
@@ -109,8 +112,8 @@ class DT5550:
         """
         Read and decode a single event
         """
-        for idet in range(N_DETECTOR):
-            self.Qold[idet] = self.Q[idet]
+        for i in range(N_DETECTOR):
+            self.Qold[i] = self.Q[i]
         
         err = 0
         event = self.fin.read(CHUNK_SIZE)
@@ -137,7 +140,7 @@ class DT5550:
             # decode time
             i0 = 8 + ioff
             i1 = 12 + ioff
-            self.t[idet] = int.from_bytes(event[i0:i1], byteorder='little')*self.clock_speed/self.fine_time_bins
+            self.t[idet] = int.from_bytes(event[i0:i1],                                   byteorder='little')*self.clock_speed/self.fine_time_bins
             # decode charge
             i0 = 12 + ioff
             i1 = 14 + ioff
@@ -147,7 +150,7 @@ class DT5550:
             #    print('asjemenou.....')
 
             # make the timewalk correction
-            self.t[idet] = self.t[idet]+self.tcorr[idet]
+            self.t[idet] = self.t[idet]-self.toff[idet]
             if ival == 1:
                 dt = self.timewalk_correct(idet)
                 self.tc[idet] = self.t[idet] - dt
