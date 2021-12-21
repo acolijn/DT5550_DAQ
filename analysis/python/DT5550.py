@@ -32,7 +32,7 @@ class DT5550:
         #
         self.filenames = []
         self.fin = ''
-        self.configfile = 'None'
+        self.config_file = 'None'
 
         if self.filename == 'None':
             self.filenames = glob.glob(self.indir+'/data_*.raw')
@@ -41,9 +41,9 @@ class DT5550:
             self.filenames = glob.glob(self.filename)
             self.indir = os.path.dirname(self.filenames[0])
 
-        self.configfile = glob.glob(self.indir + '/config*.json')[0]
-        print('DT5550:: Data recorded with config: ', self.configfile)
-        f = open(self.configfile)
+        self.config_file = glob.glob(self.indir + '/config*.json')[0]
+        print('DT5550:: Data recorded with config: ', self.config_file)
+        f = open(self.config_file,'r')
         self.config = json.load(f)
         f.close()
         
@@ -64,6 +64,8 @@ class DT5550:
         self.Qold = np.zeros(N_DETECTOR)
 
         self.valid = np.zeros(N_DETECTOR)
+        self.valid_old = np.zeros(N_DETECTOR)
+
 
         self.n_event = 0
         
@@ -114,6 +116,7 @@ class DT5550:
         """
         for i in range(N_DETECTOR):
             self.Qold[i] = self.Q[i]
+            self.valid_old[i] = self.valid[i]
         
         err = 0
         event = self.fin.read(CHUNK_SIZE)

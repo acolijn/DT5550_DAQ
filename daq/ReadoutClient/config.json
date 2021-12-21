@@ -1,6 +1,6 @@
 {
     "version": "Rev.C",
-    "source": "Na22",
+    "source": "Co60",
     "comment": "just work and no play makes AP a bad boy",
     "registers": {
         "V_max": 1.8,
@@ -14,75 +14,80 @@
         "WINDOW": 350,
         "TMODE": 0,
         "NMIN": 2,
-        "EMIN": 1500
+        "EMIN": 1250
     },
     "detector_settings": [
         {
             "det_id": 0,
-            "GAIN": 420,
-            "THRS": 100,
+            "GAIN": 1892,
+            "THRS": 300,
             "INVERT": 1,
             "BASE": 398,
-            "TOFF": 0
+            "TOFF": 0,
+            "HV": 500
         },
         {
             "det_id": 1,
-            "GAIN": 458,
-            "THRS": 100,
+            "GAIN": 2046,
+            "THRS": 300,
             "INVERT": 1,
             "BASE": 654,
-            "TOFF": 17.5
+            "TOFF": 17.5,
+            "HV": 460
         },
         {
             "det_id": 2,
-            "GAIN": 535,
-            "THRS": 100,
+            "GAIN": 1915,
+            "THRS": 300,
             "INVERT": 1,
             "BASE": 345,
-            "TOFF": 4
+            "TOFF": 4,
+            "HV": 780
         },
         {
             "det_id": 3,
-            "GAIN": 457,
-            "THRS": 100,
+            "GAIN": 1718,
+            "THRS": 300,
             "INVERT": 1,
             "BASE": 364,
-            "TOFF": 12.5
+            "TOFF": 12.5,
+            "HV": 510
         },
         {
             "det_id": 4,
-            "GAIN": 402,
+            "GAIN": 5686,
             "THRS": 100,
             "INVERT": 1,
             "BASE": 366,
-            "TOFF": -2
-
+            "TOFF": -2,
+            "HV": 650
         },
         {
             "det_id": 5,
-            "GAIN": 466,
-            "THRS": 100,
+            "GAIN": 3170,
+            "THRS": 150,
             "INVERT": 1,
             "BASE": 589,
-            "TOFF": 11.5
-
+            "TOFF": 11.5,
+            "HV": 500
         },
         {
             "det_id": 6,
-            "GAIN": 514,
-            "THRS": 100,
+            "GAIN": 1400,
+            "THRS": 300,
             "INVERT": 1,
             "BASE": 596,
-            "TOFF": 13
-
+            "TOFF": 13,
+            "HV": 590
         },
         {
             "det_id": 7,
-            "GAIN": 585,
-            "THRS": 100,
+            "GAIN": 1712,
+            "THRS": 300,
             "INVERT": 1,
             "BASE": 712,
-            "TOFF": 9
+            "TOFF": 9,
+            "HV": 500
         }
     ],
     "waveform_settings": {
