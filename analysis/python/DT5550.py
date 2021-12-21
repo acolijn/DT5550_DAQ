@@ -72,6 +72,8 @@ class DT5550:
         
         self.clock_speed = 12.5
         self.fine_time_bins = 16
+        
+        self.tcorr = np.array([0,-17.5,-4,-12.5,+2,-11.5,-10,-16])
 
         return
     
@@ -145,9 +147,11 @@ class DT5550:
             #    print('asjemenou.....')
 
             # make the timewalk correction
+            self.t[idet] = self.t[idet]+self.tcorr[idet]
             if ival == 1:
                 dt = self.timewalk_correct(idet)
                 self.tc[idet] = self.t[idet] - dt
+            
             
             # dictonary with charge
             if ival:
