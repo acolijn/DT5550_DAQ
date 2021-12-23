@@ -8,7 +8,7 @@ import matplotlib
 from matplotlib import gridspec
 import matplotlib.pyplot as plt
 
-# Ensure using PyQt5 backend
+# Ensure using PyQt5 backend 
 matplotlib.use('QT5Agg')
 
 # Matplotlib canvas class to create figure

@@ -30,8 +30,8 @@
    <widget class="QPushButton" name="plotIt">
     <property name="geometry">
      <rect>
-      <x>50</x>
-      <y>50</y>
+      <x>60</x>
+      <y>40</y>
       <width>150</width>
       <height>46</height>
      </rect>

@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0,'../python/')
 from DT5550_Waveform import *
 import wave_gui
-import glob
+
 N_DETECTOR = 8
 
 class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
