@@ -32,7 +32,7 @@ class DT5550:
         #
         self.filenames = []
         self.fin = ''
-        self.configfile = 'None'
+        self.config_file = 'None'
 
         if self.filename == 'None':
             self.filenames = glob.glob(self.indir+'/data_*.raw')
@@ -41,9 +41,9 @@ class DT5550:
             self.filenames = glob.glob(self.filename)
             self.indir = os.path.dirname(self.filenames[0])
 
-        self.configfile = glob.glob(self.indir + '/config*.json')[0]
-        print('DT5550:: Data recorded with config: ', self.configfile)
-        f = open(self.configfile)
+        self.config_file = glob.glob(self.indir + '/config*.json')[0]
+        print('DT5550:: Data recorded with config: ', self.config_file)
+        f = open(self.config_file,'r')
         self.config = json.load(f)
         f.close()
         
@@ -64,6 +64,8 @@ class DT5550:
         self.Qold = np.zeros(N_DETECTOR)
 
         self.valid = np.zeros(N_DETECTOR)
+        self.valid_old = np.zeros(N_DETECTOR)
+
 
         self.n_event = 0
         
@@ -72,6 +74,11 @@ class DT5550:
         
         self.clock_speed = 12.5
         self.fine_time_bins = 16
+        
+        self.toff = np.zeros([N_DETECTOR])
+        for i in range(N_DETECTOR):
+            self.toff[i] = self.config['detector_settings'][i]['TOFF']
+            #print(i,'TOFF = ',self.toff[i])
 
         return
     
@@ -107,8 +114,9 @@ class DT5550:
         """
         Read and decode a single event
         """
-        for idet in range(N_DETECTOR):
-            self.Qold[idet] = self.Q[idet]
+        for i in range(N_DETECTOR):
+            self.Qold[i] = self.Q[i]
+            self.valid_old[i] = self.valid[i]
         
         err = 0
         event = self.fin.read(CHUNK_SIZE)
@@ -135,22 +143,21 @@ class DT5550:
             # decode time
             i0 = 8 + ioff
             i1 = 12 + ioff
-            self.t[idet] = int.from_bytes(event[i0:i1], byteorder='little')*self.clock_speed/self.fine_time_bins
+            self.t[idet] = int.from_bytes(event[i0:i1],                                   byteorder='little')*self.clock_speed/self.fine_time_bins
             # decode charge
             i0 = 12 + ioff
             i1 = 14 + ioff
             self.Q[idet] = int.from_bytes(event[i0:i1], byteorder='little')
-            
-            if idet == 4:
-                self.Q[idet] = self.Q[idet]*0.80 # watch out ----- remove this line soon
 
             #if ival == 1 and self.Q[idet] ==0:
             #    print('asjemenou.....')
 
             # make the timewalk correction
+            self.t[idet] = self.t[idet]-self.toff[idet]
             if ival == 1:
                 dt = self.timewalk_correct(idet)
                 self.tc[idet] = self.t[idet] - dt
+            
             
             # dictonary with charge
             if ival:

@@ -1,4 +1,6 @@
-import sys, getopt, time ,os
+import sys
+import getopt
+import os
 from datetime import datetime
 #-----------------------------------------------------------------------------------------------------------------------
 def main(argv):

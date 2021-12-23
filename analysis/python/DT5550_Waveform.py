@@ -120,7 +120,7 @@ class DT5550_Waveform:
 
         """
         
-        print(plot_range)
+        #print(plot_range)
   
         # plot single event
         imin = 0
@@ -151,7 +151,7 @@ class DT5550_Waveform:
 
         # plot channel #8 with trigger info as well
         for idig in range(N_DIGITAL_OUT):
-            print(self.digital[idig][8][imin:imax])
+            #print(self.digital[idig][8][imin:imax])
             axs[1 + idig].plot(self.digital[idig][8][imin:imax], drawstyle='steps')
             axs[1 + idig].set_xlim(plot_range)
 
