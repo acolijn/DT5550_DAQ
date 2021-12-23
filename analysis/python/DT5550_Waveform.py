@@ -28,12 +28,23 @@ class DT5550_Waveform:
 
         param kwargs:
         """
-
+        self.indir = kwargs.pop('indir', 'None')
         self.filename = kwargs.pop('file', 'None')
-        self.fin = open(self.filename, "rb")
-        
-        indir = os.path.dirname(self.filename)        
-        self.config_file = glob.glob(indir+r'\config*.json')[0]
+
+        #
+        # if no filename is given we analyze all files in the directory indir
+        #
+        self.filenames = []
+        #self.fin = ''
+        self.config_file = 'None'
+
+        if self.filename == 'None':
+            self.filenames = glob.glob(self.indir + '/waveform_*.raw')
+        else:
+            self.filenames = glob.glob(self.filename)
+            self.indir = os.path.dirname(self.filenames[0])
+
+        self.config_file = glob.glob(self.indir+r'\config*.json')[0]
         
         # read the configuration file for this run
         f = open(self.config_file, 'r')
@@ -45,7 +56,17 @@ class DT5550_Waveform:
         self.analog  = np.zeros([NCHANNEL_OSC, N_BINS])
         self.digital = np.zeros([N_DIGITAL_OUT, NCHANNEL_OSC, N_BINS])
 
+        self.current_file = 0
+        self.open_data(self.filenames[0])
+
         return
+
+    def open_data(self, filename):
+        print('DT5550_Waveform:: Open data file:', filename)
+        self.fin = open(filename, "rb")
+
+    def close_data(self):
+        self.fin.close()
 
     def read_event(self):
         """
@@ -55,10 +76,20 @@ class DT5550_Waveform:
         err = 0
         wave = self.fin.read(N_BINS*NCHANNEL_OSC*CH_SIZE)
 
+        #
+        # red an event. if we are at the end of a file then open the next one
+        #
         if not wave:
-            self.fin.close()
-            err = -1
-            return err
+            self.close_data()
+            # see if there exist more files
+            self.current_file = self.current_file+1
+            if self.current_file < len(self.filenames):
+                self.open_data(self.filenames[self.current_file])
+                wave = self.fin.read(N_BINS * NCHANNEL_OSC * CH_SIZE)
+
+            else:
+                err = -1
+                return err
 
         self.n_event = self.n_event+1
 

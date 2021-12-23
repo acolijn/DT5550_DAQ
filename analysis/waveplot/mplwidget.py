@@ -1,29 +1,34 @@
-# Imports
 from PyQt5 import QtWidgets
+
+import matplotlib
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as Canvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
-import matplotlib
-from matplotlib import gridspec
-import matplotlib.pyplot as plt
-
-# Ensure using PyQt5 backend 
+# Ensure using PyQt5 backend
 matplotlib.use('QT5Agg')
 
-# Matplotlib canvas class to create figure
+
 class MplCanvas(Canvas):
+    """
+    Matplotlib class to enable plotting
+    """
     def __init__(self):
         self.fig = Figure()
-        self.ax = self.fig.subplots(5,1,sharex=True,gridspec_kw={'height_ratios': [5,1.5,1.5,1.5,1.5]})
+        self.ax = self.fig.subplots(5, 1, sharex='all', gridspec_kw={'height_ratios': [5, 1.5, 1.5, 1.5, 1.5]})
 
         Canvas.__init__(self, self.fig)
         Canvas.setSizePolicy(self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         Canvas.updateGeometry(self)
+
+
         print('done init')
 
-# Matplotlib widget
+
 class MplWidget(QtWidgets.QWidget):
+    """
+    Matplotlib widget
+    """
     def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent)   # Inherit from QWidget
         self.canvas = MplCanvas()                  # Create canvas object

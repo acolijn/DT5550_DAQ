@@ -36,7 +36,6 @@ class DT5550:
 
         if self.filename == 'None':
             self.filenames = glob.glob(self.indir+'/data_*.raw')
-
         else:
             self.filenames = glob.glob(self.filename)
             self.indir = os.path.dirname(self.filenames[0])
@@ -143,7 +142,7 @@ class DT5550:
             # decode time
             i0 = 8 + ioff
             i1 = 12 + ioff
-            self.t[idet] = int.from_bytes(event[i0:i1],                                   byteorder='little')*self.clock_speed/self.fine_time_bins
+            self.t[idet] = int.from_bytes(event[i0:i1], byteorder='little')*self.clock_speed/self.fine_time_bins
             # decode charge
             i0 = 12 + ioff
             i1 = 14 + ioff

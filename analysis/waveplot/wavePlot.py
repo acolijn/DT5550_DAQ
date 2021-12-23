@@ -1,28 +1,58 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5 import QtWidgets
+
+from analysis.python.DT5550_Waveform import DT5550_Waveform
 import sys
-sys.path.insert(0,'../python/')
-from DT5550_Waveform import *
 import wave_gui
+import numpy as np
+from matplotlib.pyplot import cm
+
 
 N_DETECTOR = 8
+N_DIGITAL_OUT = 4
 
 class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
     def __init__(self, parent=None):
         super(WavePlotter, self).__init__(parent)
         self.setupUi(self)
-        self.plotIt.clicked.connect(self.buttonClicked)
+        self.plotIt.clicked.connect(self.readAndDraw)
+        # check boxes
+        #        self.findChild()
+        self.checkers = [self.channel_0, self.channel_1, self.channel_2, self.channel_3, self.channel_4, self.channel_5, self.channel_6, self.channel_7]
+        for i in range(len(self.checkers)):
+            self.checkers[i].setChecked(True)
+            self.checkers[i].stateChanged.connect(self.selectChannel)
 
-        filename = "../../../data/20211217_171057/20211217_171057/waveform_20211217_171057_0.raw"
-        self.waves = DT5550_Waveform(file=filename)
+        self.selectALL.stateChanged.connect(self.selectAllChannels)
+
+        folderpath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select input folder', r'C:\\Users\aukep\surfdrive\FineStructure\data')
+        self.waves = DT5550_Waveform(indir=folderpath)
         # read first event and plot
-        self.waves.read_event()
+        self.readAndDraw()
+
+        self.draw_hold = False
+
+    def selectAllChannels(self):
+        # we will change the individual check boxes and I dont want to re-draw the picture 8x
+        self.draw_hold = True
+
+        value = self.selectALL.isChecked()
+        [ch.setChecked(value) for ch in self.checkers]
+
         self.drawPlot()
 
-    def buttonClicked(self):
+        self.draw_hold = False
+
+    def selectChannel(self):
+        if not self.draw_hold:
+            self.drawPlot()
+
+    def readAndDraw(self):
         self.waves.read_event()
         self.drawPlot()
 
     def drawPlot(self):
+
         for i in range(5):
             self.plotWidget.canvas.ax[i].clear()
 
@@ -35,8 +65,12 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
         Q = np.zeros([N_DETECTOR])
         Pk = np.zeros([N_DETECTOR])
 
-        plot_range=[0,1022]
+        plot_range = [0, 1022]
+        nplot = 0
+        colors = iter(cm.rainbow(np.linspace(0, 1, N_DETECTOR)))
+
         for idet in range(N_DETECTOR):
+            col = next(colors)
             #
             # integrate waveform
             #
@@ -49,20 +83,22 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
 
             # txt = 'CH '+str(idet)+' Q='+str(Q[idet])+' Pk='+str(Pk[idet])+' Ratio = '+str((Ratio))
             txt = 'CH {:1d} Q = {:>5.1f} Pk = {:>5.1f} Ratio = {:>5.2f}'.format(idet, Q[idet], Pk[idet], Ratio)
-            print(txt)
-            axs[0].plot(self.waves.analog[idet][imin:imax] -
-                        self.waves.config["detector_settings"][idet]["BASE"], label=txt, drawstyle='steps')
-            axs[0].set_xlim(plot_range)
-            for idig in range(N_DIGITAL_OUT):
-                axs[1 + idig].plot(self.waves.digital[idig][idet][imin:imax], drawstyle='steps')
-                axs[1 + idig].set_xlim(plot_range)
+            if self.checkers[idet].isChecked() == True:
+                axs[0].plot(self.waves.analog[idet][imin:imax] -
+                            self.waves.config["detector_settings"][idet]["BASE"], label=txt, drawstyle='steps', c=col)
+                axs[0].set_xlim(plot_range)
+                nplot = nplot + 1
+                for idig in range(N_DIGITAL_OUT):
+                    axs[1 + idig].plot(self.waves.digital[idig][idet][imin:imax], drawstyle='steps', c=col)
+                    axs[1 + idig].set_xlim(plot_range)
 
         # plot channel #8 with trigger info as well
         for idig in range(N_DIGITAL_OUT):
-            axs[1 + idig].plot(self.waves.digital[idig][8][imin:imax], drawstyle='steps')
+            axs[1 + idig].plot(self.waves.digital[idig][8][imin:imax], ':', drawstyle='steps', c='black')
             axs[1 + idig].set_xlim(plot_range)
 
-        axs[0].legend(loc='upper right')
+        if nplot >0:
+            axs[0].legend(loc='upper right')
         # if N_DETECTOR == 8:
         #    for idig in range(N_DIGITAL_OUT):
         #        axs[1+idig].plot(self.digital[idig][7][imin:imax])
@@ -77,6 +113,7 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
             txt = 'D' + str(i - 1)
             axs[i].set_ylabel(txt)
 
+        axs[4].set_xlabel('time (CLK)')
         self.plotWidget.canvas.draw()
 
 def main():
