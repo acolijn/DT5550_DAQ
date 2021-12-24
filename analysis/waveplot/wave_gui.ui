@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1242</width>
-    <height>1328</height>
+    <width>1671</width>
+    <height>1633</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,17 +21,23 @@
     <property name="geometry">
      <rect>
       <x>280</x>
-      <y>90</y>
-      <width>921</width>
-      <height>1171</height>
+      <y>40</y>
+      <width>1351</width>
+      <height>1511</height>
      </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
     </property>
    </widget>
    <widget class="QPushButton" name="plotIt">
     <property name="geometry">
      <rect>
       <x>60</x>
-      <y>40</y>
+      <y>70</y>
       <width>150</width>
       <height>46</height>
      </rect>
@@ -46,7 +52,7 @@
       <x>250</x>
       <y>40</y>
       <width>20</width>
-      <height>1221</height>
+      <height>1501</height>
      </rect>
     </property>
     <property name="orientation">
@@ -122,28 +128,42 @@
      </property>
     </widget>
    </widget>
-   <widget class="QComboBox" name="selectDataDir">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>40</y>
-      <width>261</width>
-      <height>31</height>
-     </rect>
-    </property>
-   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1242</width>
+     <width>1671</width>
      <height>38</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpenFile"/>
+    <addaction name="actionOpenDir"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <addaction name="menuFile"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionOpenDir">
+   <property name="text">
+    <string>Open directory....</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionOpenFile">
+   <property name="text">
+    <string>Open file....</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

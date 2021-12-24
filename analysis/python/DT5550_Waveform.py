@@ -59,6 +59,8 @@ class DT5550_Waveform:
         self.current_file = 0
         self.open_data(self.filenames[0])
 
+        self.end_of_data = False
+
         return
 
     def open_data(self, filename):
@@ -74,8 +76,10 @@ class DT5550_Waveform:
         """
 
         err = 0
-        wave = self.fin.read(N_BINS*NCHANNEL_OSC*CH_SIZE)
-
+        if not self.end_of_data:
+            wave = self.fin.read(N_BINS*NCHANNEL_OSC*CH_SIZE)
+        else:
+            wave = 0
         #
         # red an event. if we are at the end of a file then open the next one
         #
@@ -86,10 +90,10 @@ class DT5550_Waveform:
             if self.current_file < len(self.filenames):
                 self.open_data(self.filenames[self.current_file])
                 wave = self.fin.read(N_BINS * NCHANNEL_OSC * CH_SIZE)
-
             else:
-                err = -1
-                return err
+                print("DT5550_Waveform::INFO end of data")
+                self.end_of_data = True
+                return -1
 
         self.n_event = self.n_event+1
 

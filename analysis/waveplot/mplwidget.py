@@ -15,19 +15,24 @@ class MplCanvas(Canvas):
     """
     def __init__(self):
         self.fig = Figure()
-        self.ax = self.fig.subplots(5, 1, sharex='all', gridspec_kw={'height_ratios': [5, 1.5, 1.5, 1.5, 1.5]})
+        self.fig.subplots_adjust(
+            top=0.989,
+            bottom=0.048,
+            left=0.068,
+            right=0.936,
+            hspace=0.08,
+            wspace=0.05
+        )
+        self.ax = self.fig.subplots(5, 1, sharex='all', gridspec_kw={'height_ratios': [5, 1.2, 1.2, 1.2, 1.2]})
 
         Canvas.__init__(self, self.fig)
         Canvas.setSizePolicy(self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         Canvas.updateGeometry(self)
 
 
-        print('done init')
-
-
 class MplWidget(QtWidgets.QWidget):
     """
-    Matplotlib widget
+    Matplotlib widget -> upgrades a standard QWidget to MplWidget -> allows plotting
     """
     def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent)   # Inherit from QWidget
