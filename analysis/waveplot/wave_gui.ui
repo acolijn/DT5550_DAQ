@@ -6,33 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1671</width>
-    <height>1633</height>
+    <width>1642</width>
+    <height>1632</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Waveform Display</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="MplWidget" name="plotWidget" native="true">
-    <property name="enabled">
-     <bool>true</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>40</y>
-      <width>1351</width>
-      <height>1511</height>
-     </rect>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-   </widget>
    <widget class="QPushButton" name="plotIt">
     <property name="geometry">
      <rect>
@@ -59,74 +40,173 @@
      <enum>Qt::Vertical</enum>
     </property>
    </widget>
-   <widget class="QSplitter" name="splitter_2">
+   <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>60</x>
-      <y>170</y>
-      <width>133</width>
-      <height>481</height>
+      <x>280</x>
+      <y>70</y>
+      <width>1351</width>
+      <height>1461</height>
      </rect>
     </property>
-    <property name="orientation">
-     <enum>Qt::Vertical</enum>
+    <property name="currentIndex">
+     <number>0</number>
     </property>
-    <widget class="QSplitter" name="splitter">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <widget class="QCheckBox" name="selectALL">
+    <widget class="QWidget" name="tab">
+     <attribute name="title">
+      <string>Waveform</string>
+     </attribute>
+     <widget class="MplWidget" name="plotWidget" native="true">
       <property name="enabled">
        <bool>true</bool>
       </property>
-      <property name="text">
-       <string>ALL</string>
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>1341</width>
+        <height>1421</height>
+       </rect>
       </property>
-      <property name="checked">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>Baseline</string>
+     </attribute>
+     <widget class="MplWidget_Baseline" name="plotBaselineWidget" native="true">
+      <property name="enabled">
        <bool>true</bool>
       </property>
-     </widget>
-     <widget class="QCheckBox" name="channel_0">
-      <property name="text">
-       <string>channel 0</string>
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>1341</width>
+        <height>1421</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
       </property>
      </widget>
-     <widget class="QCheckBox" name="channel_1">
-      <property name="text">
-       <string>channel 1</string>
-      </property>
-     </widget>
-     <widget class="QCheckBox" name="channel_2">
-      <property name="text">
-       <string>channel 2</string>
-      </property>
-     </widget>
     </widget>
-    <widget class="QCheckBox" name="channel_3">
-     <property name="text">
-      <string>channel 3</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="channel_4">
-     <property name="text">
-      <string>channel 4</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="channel_5">
-     <property name="text">
-      <string>channel 5</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="channel_6">
-     <property name="text">
-      <string>channel 6</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="channel_7">
-     <property name="text">
-      <string>channel 7</string>
-     </property>
-    </widget>
+   </widget>
+   <widget class="QCheckBox" name="baselineSubtract">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>640</y>
+      <width>221</width>
+      <height>29</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>subtract baseline</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>170</y>
+      <width>162</width>
+      <height>400</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QCheckBox" name="selectALL">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>ALL</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="channel_0">
+       <property name="text">
+        <string>channel 0</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="channel_1">
+       <property name="text">
+        <string>channel 1</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="channel_2">
+       <property name="text">
+        <string>channel 2</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="channel_3">
+       <property name="text">
+        <string>channel 3</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="channel_4">
+       <property name="text">
+        <string>channel 4</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="channel_5">
+       <property name="text">
+        <string>channel 5</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="channel_6">
+       <property name="text">
+        <string>channel 6</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="channel_7">
+       <property name="text">
+        <string>channel 7</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="trigger_sel">
+       <property name="text">
+        <string>show trigger</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -134,7 +214,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1671</width>
+     <width>1642</width>
      <height>38</height>
     </rect>
    </property>
@@ -170,6 +250,12 @@
    <class>MplWidget</class>
    <extends>QWidget</extends>
    <header>mplwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MplWidget_Baseline</class>
+   <extends>QWidget</extends>
+   <header>mplwidget_baseline.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
