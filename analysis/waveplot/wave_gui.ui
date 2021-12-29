@@ -6,9 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1642</width>
+    <width>1703</width>
     <height>1632</height>
    </rect>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>10</pointsize>
+   </font>
   </property>
   <property name="windowTitle">
    <string>Waveform Display</string>
@@ -17,20 +22,20 @@
    <widget class="QPushButton" name="plotIt">
     <property name="geometry">
      <rect>
-      <x>60</x>
-      <y>70</y>
-      <width>150</width>
-      <height>46</height>
+      <x>30</x>
+      <y>1435</y>
+      <width>231</width>
+      <height>81</height>
      </rect>
     </property>
     <property name="text">
-     <string>Next</string>
+     <string>Next Event</string>
     </property>
    </widget>
    <widget class="Line" name="line">
     <property name="geometry">
      <rect>
-      <x>250</x>
+      <x>280</x>
       <y>40</y>
       <width>20</width>
       <height>1501</height>
@@ -43,7 +48,7 @@
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>280</x>
+      <x>320</x>
       <y>70</y>
       <width>1351</width>
       <height>1461</height>
@@ -105,8 +110,8 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>640</y>
-      <width>221</width>
+      <y>730</y>
+      <width>261</width>
       <height>29</height>
      </rect>
     </property>
@@ -117,13 +122,13 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>170</y>
-      <width>162</width>
-      <height>400</height>
+      <y>80</y>
+      <width>246</width>
+      <height>600</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -214,8 +219,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1642</width>
-     <height>38</height>
+     <width>1703</width>
+     <height>43</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -259,6 +264,21 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>plotIt</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>selectALL</tabstop>
+  <tabstop>channel_0</tabstop>
+  <tabstop>channel_1</tabstop>
+  <tabstop>channel_2</tabstop>
+  <tabstop>channel_3</tabstop>
+  <tabstop>channel_4</tabstop>
+  <tabstop>channel_5</tabstop>
+  <tabstop>channel_6</tabstop>
+  <tabstop>channel_7</tabstop>
+  <tabstop>trigger_sel</tabstop>
+  <tabstop>baselineSubtract</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

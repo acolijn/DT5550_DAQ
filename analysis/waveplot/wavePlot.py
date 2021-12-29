@@ -8,9 +8,12 @@ import wave_gui
 import numpy as np
 from matplotlib.pyplot import cm
 
-
 N_DETECTOR = 8
 N_DIGITAL_OUT = 4
+
+import qdarkstyle
+
+fontsize_axis = 16
 
 
 class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
@@ -120,7 +123,7 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
 
     def drawBaseline(self):
         """
-        Draw the baselines
+        Draw the baseline histograms
         """
 
         axs = self.plotBaselineWidget.canvas.ax
@@ -133,10 +136,18 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
         for irow in range(nrow):
             for icol in range(ncol):
                 idet = irow*2+icol
-                vals = self.waves.analog[idet]*self.waves.digital[2, idet]
+                vals = self.waves.analog[idet][0:100]*self.waves.digital[2, idet][0:100]
                 vals = vals[vals > 0]
+                mu = vals.mean()
+                sig = np.sqrt(vals.var())
+                txt = 'CH {:1d} \n$\mu$ = {:>5.1f} $\pm$ {:>3.1f}'.format(idet, mu, sig)
+                n, bins, patches = axs[irow, icol].hist(vals, bins=500, range=(0, 1000), label=txt)
+                elem = np.argmax(n)
+                #print('max = ', elem, bins[elem])
+                axs[irow, icol].set_xlim(bins[elem]-50,bins[elem]+50)
+                axs[irow, icol].set_xlabel('baseline (ADC)', fontsize=fontsize_axis)
+                axs[irow, icol].legend(loc='upper left', fontsize=14, frameon=False)
 
-                axs[irow, icol].hist(vals, bins=100, range=(0, 1000))
 
         self.plotBaselineWidget.canvas.draw()
 
@@ -161,7 +172,6 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
         nplot = 0
         colors = iter(cm.rainbow(np.linspace(0, 1, N_DETECTOR)))
 
-        fontsize_axis = 16
 
         for idet in range(N_DETECTOR):
             col = next(colors)
@@ -218,6 +228,10 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
 
 def main():
     app = QApplication(sys.argv)
+
+    dark_stylesheet = qdarkstyle.load_stylesheet_pyqt5()
+    app.setStyleSheet(dark_stylesheet)
+
     form = WavePlotter()
     form.show()
     app.exec_()
