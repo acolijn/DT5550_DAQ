@@ -9,6 +9,10 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_MainWindow(object):
+
+    def __init__(self):
+        print('do the init')
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1703, 1632)

@@ -13,10 +13,6 @@ MAX16BIT = 65535
 
 NCHANNEL_OSC = 9
 
-#
-# variable needed for data decoding
-#
-
 
 class DT5550_Waveform:
     """
@@ -28,6 +24,7 @@ class DT5550_Waveform:
 
         param kwargs:
         """
+        print('DT5550_Waveform:: Initialize......')
         self.indir = kwargs.pop('indir', 'None')
         self.filename = kwargs.pop('file', 'None')
 

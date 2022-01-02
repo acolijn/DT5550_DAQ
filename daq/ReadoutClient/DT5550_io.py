@@ -1,11 +1,13 @@
-#from DT5550_Functions import *
+from DT5550_Functions import *
 
-import sys, getopt, time
+import time
 import json
 import numpy as np
 
 # number of bytes per event
 ##EVENT_LENGTH = 18
+#from daq.ReadoutClient.DT5550_Functions import *
+
 
 class DT5550_io:
     """

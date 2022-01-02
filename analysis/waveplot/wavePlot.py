@@ -16,7 +16,7 @@ import qdarkstyle
 fontsize_axis = 16
 
 
-class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
+class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
     """
     GUI for waveform plotting - data from DT5550 in Oscilloscope mode
     """
@@ -42,7 +42,6 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
 
         self.folderpath = ''
         self.draw_hold = False
-        self.waves = DT5550_Waveform
 
         self.actionExit.triggered.connect(self.exitAction)
         self.actionOpenDir.triggered.connect(self.selectDataDir)
@@ -65,7 +64,8 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
         if self.filename == '':
             return
 
-        self.waves = DT5550_Waveform(file=self.filename)
+        DT5550_Waveform.__init__(self, file=self.filename)
+
         self.readAndDraw()
 
         self.enableButtons(True)  # now all buttons can be anabled
@@ -77,7 +77,7 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
         if len(fnames) == 0:
             return
 
-        self.waves = DT5550_Waveform(indir=self.folderpath)
+        DT5550_Waveform.__init__(self, indir=self.folderpath)
         self.readAndDraw()
 
         self.enableButtons(True)  # now all buttons can be anabled
@@ -112,7 +112,7 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
 
     def readAndDraw(self):
         # read the next event
-        if self.waves.read_event() == -1:
+        if self.read_event() == -1:
             self.plotIt.setEnabled(False)
 
         if self.tab.isVisible():
@@ -123,7 +123,9 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
 
     def drawBaseline(self):
         """
-        Draw the baseline histograms
+        1. Draw the baseline histograms.
+        2. Calculate the mean and the error on the mean
+        3. Calculate the baseline spread
         """
 
         axs = self.plotBaselineWidget.canvas.ax
@@ -136,15 +138,16 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
         for irow in range(nrow):
             for icol in range(ncol):
                 idet = irow*2+icol
-                vals = self.waves.analog[idet][0:100]*self.waves.digital[2, idet][0:100]
+                vals = self.analog[idet][0:100]*self.digital[2, idet][0:100]
                 vals = vals[vals > 0]
                 mu = vals.mean()
                 sig = np.sqrt(vals.var())
-                txt = 'CH {:1d} \n$\mu$ = {:>5.1f} $\pm$ {:>3.1f}'.format(idet, mu, sig)
+                num = len(vals)
+                txt = 'CH {:1d} \n$\mu$ = {:>5.1f} $\pm$ {:>3.1f}\n$\sigma$ = {:>5.1f}'.format(idet, mu, sig/np.sqrt(num), sig)
                 n, bins, patches = axs[irow, icol].hist(vals, bins=500, range=(0, 1000), label=txt)
                 elem = np.argmax(n)
                 #print('max = ', elem, bins[elem])
-                axs[irow, icol].set_xlim(bins[elem]-50,bins[elem]+50)
+                axs[irow, icol].set_xlim(bins[elem]-50, bins[elem]+50)
                 axs[irow, icol].set_xlabel('baseline (ADC)', fontsize=fontsize_axis)
                 axs[irow, icol].legend(loc='upper left', fontsize=14, frameon=False)
 
@@ -178,8 +181,8 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
             #
             # integrate waveform
             #
-            Q[idet] = self.waves.integrate_waveform(idet)
-            Pk[idet] = self.waves.get_peak(idet)
+            Q[idet] = self.integrate_waveform(idet)
+            Pk[idet] = self.get_peak(idet)
 
             Ratio = 0
             if Q[idet] != 0:
@@ -189,22 +192,22 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
             txt = 'CH {:1d} Q = {:>5.1f} Pk = {:>5.1f} Ratio = {:>5.2f}'.format(idet, Q[idet], Pk[idet], Ratio)
             if self.checkers[idet].isChecked() == True:
                 if self.baselineSubtract.isChecked():
-                    axs[0].plot(self.waves.analog[idet][imin:imax] -
-                                self.waves.config["detector_settings"][idet]["BASE"],
+                    axs[0].plot(self.analog[idet][imin:imax] -
+                                self.config["detector_settings"][idet]["BASE"],
                                 label=txt, drawstyle='steps', c=col)
                 else:
-                    axs[0].plot(self.waves.analog[idet][imin:imax], label=txt, drawstyle='steps', c=col)
+                    axs[0].plot(self.analog[idet][imin:imax], label=txt, drawstyle='steps', c=col)
 
                 axs[0].set_xlim(plot_range)
                 nplot = nplot + 1
                 for idig in range(N_DIGITAL_OUT):
-                    axs[1 + idig].plot(self.waves.digital[idig][idet][imin:imax], drawstyle='steps', c=col)
+                    axs[1 + idig].plot(self.digital[idig][idet][imin:imax], drawstyle='steps', c=col)
                     axs[1 + idig].set_xlim(plot_range)
 
         # plot channel #8 with trigger info as well
         if self.trigger_sel.isChecked():
             for idig in range(N_DIGITAL_OUT):
-                axs[1 + idig].plot(self.waves.digital[idig][8][imin:imax], ':', drawstyle='steps', c='black')
+                axs[1 + idig].plot(self.digital[idig][8][imin:imax], ':', drawstyle='steps', c='black')
                 axs[1 + idig].set_xlim(plot_range)
 
         if nplot >0:
@@ -214,7 +217,7 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow):
         #        axs[1+idig].plot(self.digital[idig][7][imin:imax])
         axs[0].set_ylabel('Analog (ADC)', fontsize=fontsize_axis)
         # axs[0].set_ylim([-20,20])
-        secax = axs[0].secondary_yaxis('right', functions=(self.waves.adc2v, self.waves.v2adc))
+        secax = axs[0].secondary_yaxis('right', functions=(self.adc2v, self.v2adc))
         secax.set_color('green')
         secax.set_ylabel('Analog (V)', fontsize=fontsize_axis)
 
