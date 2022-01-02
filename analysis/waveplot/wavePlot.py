@@ -105,16 +105,21 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
 
 
     def selectChannel(self):
+        #
+        # draw if needed
+        #
         if not self.draw_hold:
-            self.drawPlot()
-            self.drawBaseline()
-
+            if self.tab.isVisible():
+                self.drawPlot()
+            elif self.tab_2.isVisible():
+                self.drawBaseline()
 
     def readAndDraw(self):
         # read the next event
         if self.read_event() == -1:
             self.plotIt.setEnabled(False)
 
+        # and draw either the waveform or the baseline graphs, depending on which tab is selected in the GUI
         if self.tab.isVisible():
             self.drawPlot()
         elif self.tab_2.isVisible():
@@ -164,7 +169,7 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
 
         axs = self.plotWidget.canvas.ax
 
-        # plot single event
+        # set the bin limits... bin 1023 always behave weirrd, so I do not plot it.
         imin = 0
         imax = 1022
 
@@ -176,6 +181,9 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
         colors = iter(cm.rainbow(np.linspace(0, 1, N_DETECTOR)))
 
 
+        #
+        # loop over all the detectors
+        #
         for idet in range(N_DETECTOR):
             col = next(colors)
             #
@@ -184,13 +192,18 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
             Q[idet] = self.integrate_waveform(idet)
             Pk[idet] = self.get_peak(idet)
 
+            #
+            # calculate the peak to charge ratio
+            #
             Ratio = 0
             if Q[idet] != 0:
                 Ratio = Pk[idet] / Q[idet]
 
-            # txt = 'CH '+str(idet)+' Q='+str(Q[idet])+' Pk='+str(Pk[idet])+' Ratio = '+str((Ratio))
             txt = 'CH {:1d} Q = {:>5.1f} Pk = {:>5.1f} Ratio = {:>5.2f}'.format(idet, Q[idet], Pk[idet], Ratio)
+            # only plot the selected channels
             if self.checkers[idet].isChecked() == True:
+                # subtract the baseline (as set from the config file) from teh analog signal.
+                # this should be just used as an indicator, since the DT5550 DAQ dynamically adjusts the baseline
                 if self.baselineSubtract.isChecked():
                     axs[0].plot(self.analog[idet][imin:imax] -
                                 self.config["detector_settings"][idet]["BASE"],
@@ -199,6 +212,8 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
                     axs[0].plot(self.analog[idet][imin:imax], label=txt, drawstyle='steps', c=col)
 
                 axs[0].set_xlim(plot_range)
+
+                # plot the digital signal D0-D3
                 nplot = nplot + 1
                 for idig in range(N_DIGITAL_OUT):
                     axs[1 + idig].plot(self.digital[idig][idet][imin:imax], drawstyle='steps', c=col)
@@ -210,23 +225,27 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
                 axs[1 + idig].plot(self.digital[idig][8][imin:imax], ':', drawstyle='steps', c='black')
                 axs[1 + idig].set_xlim(plot_range)
 
+        # only draw the axis label if there are plots
         if nplot >0:
             axs[0].legend(loc='upper right', fontsize=14)
-        # if N_DETECTOR == 8:
-        #    for idig in range(N_DIGITAL_OUT):
-        #        axs[1+idig].plot(self.digital[idig][7][imin:imax])
+
+        # dual y-axis for the analog output signal. left: ADC counts right: V
         axs[0].set_ylabel('Analog (ADC)', fontsize=fontsize_axis)
-        # axs[0].set_ylim([-20,20])
         secax = axs[0].secondary_yaxis('right', functions=(self.adc2v, self.v2adc))
         secax.set_color('green')
         secax.set_ylabel('Analog (V)', fontsize=fontsize_axis)
 
+        # set the y-limits for the digital signals and the axes labels
         for i in range(1, 5):
             axs[i].set_ylim([-0.1, 1.1])
             txt = 'D' + str(i - 1)
             axs[i].set_ylabel(txt, fontsize=fontsize_axis)
 
         axs[4].set_xlabel('time (CLK)', fontsize=fontsize_axis)
+
+        #
+        # Don't forget to draw the canvas
+        #
         self.plotWidget.canvas.draw()
 
 def main():
