@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '.\wave_gui.ui'
+# Form implementation generated from reading ui file 'wave_gui.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -9,34 +9,30 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_MainWindow(object):
-
-    def __init__(self):
-        print('do the init')
-
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1703, 1632)
+        MainWindow.resize(860, 824)
         font = QtGui.QFont()
         font.setPointSize(10)
         MainWindow.setFont(font)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.plotIt = QtWidgets.QPushButton(self.centralwidget)
-        self.plotIt.setGeometry(QtCore.QRect(30, 1435, 231, 81))
+        self.plotIt.setGeometry(QtCore.QRect(30, 713, 101, 41))
         self.plotIt.setObjectName("plotIt")
         self.line = QtWidgets.QFrame(self.centralwidget)
-        self.line.setGeometry(QtCore.QRect(280, 40, 20, 1501))
+        self.line.setGeometry(QtCore.QRect(150, 10, 20, 771))
         self.line.setFrameShape(QtWidgets.QFrame.VLine)
         self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line.setObjectName("line")
         self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
-        self.tabWidget.setGeometry(QtCore.QRect(320, 70, 1351, 1461))
+        self.tabWidget.setGeometry(QtCore.QRect(170, 30, 681, 751))
         self.tabWidget.setObjectName("tabWidget")
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
         self.plotWidget = MplWidget(self.tab)
         self.plotWidget.setEnabled(True)
-        self.plotWidget.setGeometry(QtCore.QRect(0, 0, 1341, 1421))
+        self.plotWidget.setGeometry(QtCore.QRect(0, 0, 671, 721))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -48,7 +44,7 @@ class Ui_MainWindow(object):
         self.tab_2.setObjectName("tab_2")
         self.plotBaselineWidget = MplWidget_Baseline(self.tab_2)
         self.plotBaselineWidget.setEnabled(True)
-        self.plotBaselineWidget.setGeometry(QtCore.QRect(0, 0, 1341, 1421))
+        self.plotBaselineWidget.setGeometry(QtCore.QRect(0, 0, 671, 721))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -57,11 +53,11 @@ class Ui_MainWindow(object):
         self.plotBaselineWidget.setObjectName("plotBaselineWidget")
         self.tabWidget.addTab(self.tab_2, "")
         self.baselineSubtract = QtWidgets.QCheckBox(self.centralwidget)
-        self.baselineSubtract.setGeometry(QtCore.QRect(20, 730, 261, 29))
+        self.baselineSubtract.setGeometry(QtCore.QRect(20, 330, 120, 20))
         self.baselineSubtract.setChecked(True)
         self.baselineSubtract.setObjectName("baselineSubtract")
         self.layoutWidget = QtWidgets.QWidget(self.centralwidget)
-        self.layoutWidget.setGeometry(QtCore.QRect(20, 80, 246, 600))
+        self.layoutWidget.setGeometry(QtCore.QRect(20, 50, 97, 256))
         self.layoutWidget.setObjectName("layoutWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.layoutWidget)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -101,7 +97,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.addWidget(self.trigger_sel)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1703, 43))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 860, 21))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")

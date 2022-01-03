@@ -18,9 +18,9 @@ class MplCanvas(Canvas):
         self.fig.subplots_adjust(
             top=0.989,
             bottom=0.048,
-            left=0.068,
-            right=0.936,
-            hspace=0.08,
+            left=0.093,
+            right=0.886,
+            hspace=0.12,
             wspace=0.05
         )
         self.ax = self.fig.subplots(5, 1, sharex='all', gridspec_kw={'height_ratios': [5, 1.2, 1.2, 1.2, 1.2]})

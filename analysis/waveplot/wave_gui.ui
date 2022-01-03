@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1703</width>
-    <height>1632</height>
+    <width>860</width>
+    <height>824</height>
    </rect>
   </property>
   <property name="font">
@@ -23,9 +23,9 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>1435</y>
-      <width>231</width>
-      <height>81</height>
+      <y>713</y>
+      <width>101</width>
+      <height>41</height>
      </rect>
     </property>
     <property name="text">
@@ -35,10 +35,10 @@
    <widget class="Line" name="line">
     <property name="geometry">
      <rect>
-      <x>280</x>
-      <y>40</y>
+      <x>150</x>
+      <y>10</y>
       <width>20</width>
-      <height>1501</height>
+      <height>771</height>
      </rect>
     </property>
     <property name="orientation">
@@ -48,10 +48,10 @@
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>320</x>
-      <y>70</y>
-      <width>1351</width>
-      <height>1461</height>
+      <x>170</x>
+      <y>30</y>
+      <width>681</width>
+      <height>751</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -69,8 +69,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>1341</width>
-        <height>1421</height>
+        <width>671</width>
+        <height>721</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -93,8 +93,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>1341</width>
-        <height>1421</height>
+        <width>671</width>
+        <height>721</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -110,9 +110,9 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>730</y>
-      <width>261</width>
-      <height>29</height>
+      <y>330</y>
+      <width>120</width>
+      <height>20</height>
      </rect>
     </property>
     <property name="text">
@@ -126,9 +126,9 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>80</y>
-      <width>246</width>
-      <height>600</height>
+      <y>50</y>
+      <width>97</width>
+      <height>256</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -219,8 +219,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1703</width>
-     <height>43</height>
+     <width>860</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

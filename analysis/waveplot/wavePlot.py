@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
 from analysis.python.DT5550_Waveform import DT5550_Waveform
 import sys
@@ -13,7 +13,7 @@ N_DIGITAL_OUT = 4
 
 import qdarkstyle
 
-fontsize_axis = 16
+fontsize_axis = 10
 
 
 class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
@@ -60,7 +60,7 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
         sys.exit(0)
 
     def selectDataFile(self):
-        self.filename = QtWidgets.QFileDialog.getOpenFileName(self, 'Select input waveform', r'C:\\Users\aukep\surfdrive\FineStructure\data')[0]
+        self.filename = QtWidgets.QFileDialog.getOpenFileName(self, 'Select input waveform', r'C:\\data')[0]
         if self.filename == '':
             return
 
@@ -72,7 +72,7 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
 
     def selectDataDir(self):
 
-        self.folderpath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select input folder', r'C:\\Users\aukep\surfdrive\FineStructure\data')
+        self.folderpath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select input folder', r'C:\\data')
         fnames = glob.glob(self.folderpath + r'\wave*.raw')
         if len(fnames) == 0:
             return
@@ -154,7 +154,7 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
                 #print('max = ', elem, bins[elem])
                 axs[irow, icol].set_xlim(bins[elem]-50, bins[elem]+50)
                 axs[irow, icol].set_xlabel('baseline (ADC)', fontsize=fontsize_axis)
-                axs[irow, icol].legend(loc='upper left', fontsize=14, frameon=False)
+                axs[irow, icol].legend(loc='upper left', fontsize=8, frameon=False)
 
 
         self.plotBaselineWidget.canvas.draw()
@@ -227,7 +227,7 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
 
         # only draw the axis label if there are plots
         if nplot >0:
-            axs[0].legend(loc='upper right', fontsize=14)
+            axs[0].legend(loc='upper right', fontsize=8)
 
         # dual y-axis for the analog output signal. left: ADC counts right: V
         axs[0].set_ylabel('Analog (ADC)', fontsize=fontsize_axis)
@@ -250,6 +250,12 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
 
 def main():
     app = QApplication(sys.argv)
+
+    # Handle high resolution displays:
+    if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
+        QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+    if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
+        QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
     dark_stylesheet = qdarkstyle.load_stylesheet_pyqt5()
     app.setStyleSheet(dark_stylesheet)
