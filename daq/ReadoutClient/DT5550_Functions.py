@@ -346,6 +346,7 @@ def CPACK_CP_0_GET_DATA(n_packet, timeout_ms, handle):
     [err, data, read_data, valid_data] = __abstracted_fifo_read(data_length, RegisterFile.SCI_REG_CP_0_FIFOADDRESS, timeout_ms, handle)
     return err, data, read_data, valid_data
 
+
 def set_registers(handle, config_file):
 
     print('set_registers:: Set up the registers in the DT5550. handle=',handle)

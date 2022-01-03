@@ -69,7 +69,7 @@ def main(argv):
         # make the DAQ run command
         n_proc = n_event_per_file
         if int(n_event/((irun+1)*n_event_per_file)) == 0:
-            n_proc = n_event%n_event_per_file
+            n_proc = n_event % n_event_per_file
 
         output_file = outdir + "/data_" +date_tag + "_" + str(irun) + ".raw"
         cmd = "C:/ProgramData/Anaconda3/python DT5550_Readout.py -n "+str(n_proc)+" -c "+config_file+" -o " + output_file + " -m data"
