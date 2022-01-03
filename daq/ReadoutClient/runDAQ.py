@@ -2,6 +2,7 @@ import sys
 import getopt
 import os
 from datetime import datetime
+
 #-----------------------------------------------------------------------------------------------------------------------
 def main(argv):
     """
@@ -71,7 +72,7 @@ def main(argv):
             n_proc = n_event%n_event_per_file
 
         output_file = outdir + "/data_" +date_tag + "_" + str(irun) + ".raw"
-        cmd = "C:/ProgramData/Anaconda3/python DT5550_Readout.py -n "+str(n_proc)+" -c "+config_file+" -o " + output_file
+        cmd = "C:/ProgramData/Anaconda3/python DT5550_Readout.py -n "+str(n_proc)+" -c "+config_file+" -o " + output_file + " -m data"
         if irun > 0:
             cmd = cmd + " -i"
         # run the DAQ
@@ -79,7 +80,7 @@ def main(argv):
 
         if save_waveform:
             output_file = outdir + "/waveform_" +date_tag + "_" + str(irun) + ".raw"
-            cmd = "C:/ProgramData/Anaconda3/python DT5550_WaveForm_Readout.py -n 10  -c " + config_file + " -o " + output_file + " -i"
+            cmd = "C:/ProgramData/Anaconda3/python DT5550_Readout.py -n 25  -c " + config_file + " -o " + output_file + " -i -m osc"
             os.system(cmd)
 
     print("Exit runDAQ")
