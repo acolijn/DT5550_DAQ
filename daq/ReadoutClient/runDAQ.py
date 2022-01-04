@@ -15,7 +15,7 @@ def main(argv):
     save_waveform = False
 
     try:
-        opts, args = getopt.getopt(argv,"hn:o:c:iw",["nevent=","outdir=","cfile=","init=","wform="])
+        opts, args = getopt.getopt(argv, "hn:o:c:iw", ["nevent=", "outdir=", "cfile=", "init=", "wform="])
     except getopt.GetoptError:
         print('runDAQ.py -n <number of events> -o <outdir> -c <configfile> -w')
         sys.exit(2)
@@ -50,7 +50,7 @@ def main(argv):
         outdir = r"C:\data/"
     outdir = outdir + date_tag
     cmd = 'mkdir "'+outdir+'"'
-    print('Create output directory:',cmd)
+    print('Create output directory:', cmd)
     os.system(cmd)
     outdir = outdir + '/'
 

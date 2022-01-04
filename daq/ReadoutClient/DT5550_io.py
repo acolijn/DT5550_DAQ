@@ -58,12 +58,21 @@ class DT5550_io:
 
         # Initialize the board and get a handle
         Init()
-        [err, self.handle] = ConnectDevice(board)
-        if (err == 0):
-            print("initialize_daq:: Successful connection to board ", board)
-        else:
-            print("initialize_daq:: Connection Error")
-            return -1
+
+        ntry = 5
+        itry = 0
+
+        while (1):
+            [err, self.handle] = ConnectDevice(board)
+            if (err == 0):
+                print("initialize_daq:: Successful connection to board ", board)
+                break
+            elif (err != 0) and (itry < ntry):
+                print("initialize_daq:: Connection Error.... retry connect")
+                itry = itry+1
+            elif (err != 0) and (itry >= ntry):
+                print("initialize_daq:: Connection Error.... terminate")
+                break
 
         return
 

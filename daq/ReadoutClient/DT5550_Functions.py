@@ -1,8 +1,8 @@
 import RegisterFile
-import json, time
+import json
+import time
 from ctypes import *
 import os
-import ctypes
 
 # number of bytes per event
 EVENT_LENGTH = 18
@@ -342,9 +342,15 @@ def CPACK_CP_0_GET_AVAILABLE_DATA(handle):
 
 def CPACK_CP_0_GET_DATA(n_packet, timeout_ms, handle):
     n_line = 16
-    data_length = n_packet *( 3 + n_line)
+    data_length = n_packet * (3 + n_line)
     [err, data, read_data, valid_data] = __abstracted_fifo_read(data_length, RegisterFile.SCI_REG_CP_0_FIFOADDRESS, timeout_ms, handle)
     return err, data, read_data, valid_data
+
+def dummy_function():
+
+    print('I am dummy.....')
+    return -1
+
 
 
 def set_registers(handle, config_file):
@@ -356,7 +362,7 @@ def set_registers(handle, config_file):
         # not defined then read default....
         config_file = 'config.json'
 
-    print('set_registers:: Configuration from: ',config_file)
+    print('set_registers:: Configuration from: ', config_file)
 
     f = open(config_file,'r')
     data = json.load(f)

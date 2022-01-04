@@ -17,9 +17,9 @@ class MplCanvas_Baseline(Canvas):
         self.fig = Figure()
         self.fig.subplots_adjust(
             top=0.98,
-            bottom=0.065,
+            bottom=0.07,
             left=0.065,
-            right=0.98,
+            right=0.97,
             hspace=0.4,
             wspace=0.12
         )

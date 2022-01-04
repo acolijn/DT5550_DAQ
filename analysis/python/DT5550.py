@@ -60,9 +60,13 @@ class DT5550:
         self.tc = np.zeros(N_DETECTOR)
         #
         self.Q = np.zeros(N_DETECTOR)
+        self.ph = np.zeros(N_DETECTOR)
         self.Qold = np.zeros(N_DETECTOR)
 
         self.valid = np.zeros(N_DETECTOR)
+        self.valid0 = np.zeros(N_DETECTOR)
+        self.valid1 = np.zeros(N_DETECTOR)
+
         self.valid_old = np.zeros(N_DETECTOR)
 
 
@@ -83,9 +87,13 @@ class DT5550:
     
     def timewalk_correct(self, idet):
         
-        Q = self.Q[idet]
-        peak = Q*self.area_to_peak  # always the same conversion factor
+        # not needed anymore, since we now directly measure the peak height.....
+        # Q = self.Q[idet]
+        # peak = Q*self.area_to_peak  # always the same conversion factor
+        #
+        
         alpha = 0
+        peak = self.ph[idet]
         if peak != 0:
             alpha = self.config['detector_settings'][idet]['THRS'] / peak
         # else:
@@ -128,15 +136,21 @@ class DT5550:
         for idet in range(N_DETECTOR):
             ioff = idet * CHANNEL_SIZE
             
+            # decode pulse height
+            i0 = 14 + ioff
+            i1 = 16 + ioff
+            self.ph[idet] = (int.from_bytes(event[i0:i1], byteorder='little') & 0x3FFF)
+
             # decode valid bit
             i0 = 15 + ioff
             i1 = 16 + ioff
             ival0 = (int.from_bytes(event[i0:i1], byteorder='little') & 0x80) >> 7
-            # ival1 = (int.from_bytes(event[i0:i1], byteorder='little') & 0x40) >> 6
+            ival1 = (int.from_bytes(event[i0:i1], byteorder='little') & 0x40) >> 6
             # print(idet,'v0',ival0,'v1',ival1)
             # ival = (ival0 & ival1)
-            ival = ival0
-            
+            self.valid0[idet] = ival0
+            self.valid0[idet] = ival1
+            ival = (ival0 & ival1)
             self.valid[idet] = ival
 
             # decode time
@@ -148,8 +162,8 @@ class DT5550:
             i1 = 14 + ioff
             self.Q[idet] = int.from_bytes(event[i0:i1], byteorder='little')
 
-            #if ival == 1 and self.Q[idet] ==0:
-            #    print('asjemenou.....')
+            #if ival == 1:
+            #    print(idet,' Q =',self.Q[idet],' ph = ',self.ph[idet], 'R = ', self.Q[idet]/self.ph[idet])
 
             # make the timewalk correction
             self.t[idet] = self.t[idet]-self.toff[idet]

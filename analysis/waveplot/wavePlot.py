@@ -15,6 +15,12 @@ import qdarkstyle
 
 fontsize_axis = 10
 
+# Handle high resolution displays:
+if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
+    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
+    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+
 
 class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
     """
@@ -91,15 +97,19 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
         self.baselineSubtract.setEnabled(status)
 
     def selectAllChannels(self):
+        #
         # we will change the individual check boxes and I dont want to re-draw the picture 8x
+        #
         self.draw_hold = True
 
         value = self.selectALL.isChecked()
         [ch.setChecked(value) for ch in self.checkers]
         self.trigger_sel.setChecked(value)
 
-        self.drawPlot()
-        self.drawBaseline()
+        if self.tab.isVisible():
+            self.drawPlot()
+        elif self.tab_2.isVisible():
+            self.drawBaseline()
 
         self.draw_hold = False
 
@@ -197,12 +207,12 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
             #
             Ratio = 0
             if Q[idet] != 0:
-                Ratio = Pk[idet] / Q[idet]
+                Ratio = Pk[idet] * (self.config['detector_settings'][idet]['GAIN']/Q[idet])
 
             txt = 'CH {:1d} Q = {:>5.1f} Pk = {:>5.1f} Ratio = {:>5.2f}'.format(idet, Q[idet], Pk[idet], Ratio)
             # only plot the selected channels
             if self.checkers[idet].isChecked() == True:
-                # subtract the baseline (as set from the config file) from teh analog signal.
+                # subtract the baseline (as set from the config file) from the analog signal.
                 # this should be just used as an indicator, since the DT5550 DAQ dynamically adjusts the baseline
                 if self.baselineSubtract.isChecked():
                     axs[0].plot(self.analog[idet][imin:imax] -
@@ -251,11 +261,7 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
 def main():
     app = QApplication(sys.argv)
 
-    # Handle high resolution displays:
-    if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
-        QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
-    if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
-        QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+
 
     dark_stylesheet = qdarkstyle.load_stylesheet_pyqt5()
     app.setStyleSheet(dark_stylesheet)

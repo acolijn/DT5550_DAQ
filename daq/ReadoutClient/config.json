@@ -14,31 +14,31 @@
         "WINDOW": 350,
         "TMODE": 0,
         "NMIN": 2,
-        "EMIN": 2000
+        "EMIN": 1000
     },
     "detector_settings": [
         {
             "det_id": 0,
             "GAIN": 1892,
-            "THRS": 25,
+            "THRS": 50,
             "INVERT": 1,
-            "BASE": 398,
+            "BASE": 403,
             "TOFF": 0,
             "HV": 500
         },
         {
             "det_id": 1,
             "GAIN": 2046,
-            "THRS": 25,
+            "THRS": 50,
             "INVERT": 1,
-            "BASE": 654,
+            "BASE": 661,
             "TOFF": 17.5,
             "HV": 460
         },
         {
             "det_id": 2,
             "GAIN": 1915,
-            "THRS": 25,
+            "THRS": 50,
             "INVERT": 1,
             "BASE": 345,
             "TOFF": 4,
@@ -47,45 +47,45 @@
         {
             "det_id": 3,
             "GAIN": 1718,
-            "THRS": 25,
+            "THRS": 50,
             "INVERT": 1,
-            "BASE": 364,
+            "BASE": 367,
             "TOFF": 12.5,
             "HV": 510
         },
         {
             "det_id": 4,
             "GAIN": 5686,
-            "THRS": 15,
+            "THRS": 30,
             "INVERT": 1,
-            "BASE": 366,
+            "BASE": 370,
             "TOFF": -2,
             "HV": 650
         },
         {
             "det_id": 5,
             "GAIN": 3170,
-            "THRS": 25,
+            "THRS": 50,
             "INVERT": 1,
-            "BASE": 589,
+            "BASE": 594,
             "TOFF": 11.5,
             "HV": 500
         },
         {
             "det_id": 6,
             "GAIN": 1400,
-            "THRS": 25,
+            "THRS": 50,
             "INVERT": 1,
-            "BASE": 596,
+            "BASE": 604,
             "TOFF": 13,
             "HV": 590
         },
         {
             "det_id": 7,
             "GAIN": 1712,
-            "THRS": 25,
+            "THRS": 50,
             "INVERT": 1,
-            "BASE": 712,
+            "BASE": 717,
             "TOFF": 9,
             "HV": 500
         }
