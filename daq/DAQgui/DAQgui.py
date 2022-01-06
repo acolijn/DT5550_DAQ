@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
-from PyQt5 import QtWidgets, QtCore, Qt
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtCore import QThread, QProcess
 
+from datetime import datetime
 import sys
 import json
 import daq_interface
@@ -18,6 +20,7 @@ if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
 if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
+
 class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
     """
     GUI for DAQ
@@ -34,6 +37,8 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         self.hlabels = []
         self.g_hlabels = []
         self.vlabels = []
+        self.doit = QProcess()
+
 
         # read the default configuration file....
         self.readConfiguration()
@@ -49,43 +54,125 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         self.sourceSelect.currentIndexChanged.connect(self.selectTheSource)
         #
         self.loadConfig.clicked.connect(self.loadConfiguration)
+        # what to do if run is clicked
+        self.run_start.clicked.connect(self.runStart)
+        # what to do if stop is clicked
+        self.run_stop.setDisabled(True)
+        self.run_stop.clicked.connect(self.runStop)
+
+    def runStart(self):
+        """
+        start a run
+        """
+
+        self.run_start.setDisabled(True)
+        self.loadConfig.setDisabled(True)
+        self.run_stop.setEnabled(True)
+
+
+        # 1. write configuration
+        self.writeConfiguration()
+        # 2. compose the run command
+        nevent = int(self.numberOfEvents.text())
+        cmd = 'python runDAQ.py -n '+str(nevent)+' -c test.json '
+
+        if self.storeWaveforms.isChecked():
+            cmd = cmd + ' -w'
+
+        self.doit.readyReadStandardOutput.connect(self.handle_stdout)
+        self.doit.finished.connect(self.process_finished)  # Clean up once complete.
+        self.doit.setProgram('C:\ProgramData\Anaconda3\python')
+        self.doit.setArguments(['test_process.py'])
+        self.doit.start() #'C:\ProgramData\Anaconda3\python', ['test_process.py'])
+
+
+    def process_finished(self):
+        """
+
+        """
+        self.message('process_finished:: end of run')
+
+        self.run_start.setEnabled(True)
+        self.loadConfig.setEnabled(True)
+        self.run_stop.setDisabled(True)
+
+        self.doit = None
+
+    def handle_stdout(self):
+        data = self.doit.readAllStandardOutput()
+        stdout = bytes(data).decode("utf8")
+        self.message(stdout)
+
+    def message(self, s):
+        """
+        Message parsing to log window
+        """
+        #date_time = ''
+        #now = datetime.now()
+        date_time = datetime.now().strftime("%m/%d/%Y %H:%M:%S > ")
+
+        lines = s.split('\n')
+
+        for line in lines:
+            line = line.strip()
+            if line != '':
+                self.logWindow.append(date_time + line)
+
+    def runStop(self):
+        """
+        stop a run
+        """
+        self.message('runStop:: kill run')
+        self.doit.kill()
+        self.run_start.setEnabled(True)
+        self.loadConfig.setEnabled(True)
+        self.run_stop.setDisabled(True)
 
     def selectTheSource(self):
         """
         Select the source... written to the header of the config file
         """
-        print('select',self.sourceSelect.currentText())
+        self.message('select ' + self.sourceSelect.currentText())
 
     def writeConfiguration(self):
         """
         Write a new configuration file, based on the values in the table
         """
+        self.readConfigurationFromTable()
 
-        readConfigurationFromTable()
+        filename = 'test.json'
+        self.message("writeConfiguration:: write new config file:"+filename)
 
-        f = open('test.json')
+        f = open(filename, 'w')
+        print(self.config_new)
         json.dump(self.config_new, f, indent=4)
         f.close()
+
+        print("writeConfiguration:: done")
 
     def readConfigurationFromTable(self):
         """
         Read the values from the configuration tables to make.....
         """
         self.config_new = self.config
-
+        # source
+        self.config_new['source'] = self.sourceSelect.currentText()
         # global settings
+
         for label in self.g_hlabels:
-            icol = self.g_hlabels(label).index()
-            value = self.detectorSettings.item(0, icol)
-            self.config_new['registers'][label] = value
+            icol = self.g_hlabels.index(label)
+            value = self.globalSettings.item(0, icol).text()
+            if label != 'V_offset':
+                self.config_new['registers'][label] = int(value)
+            else:
+                self.config_new['registers'][label] = float(value)
 
         # individual detector settings
         for idet in range(N_DETECTOR):
             for label in self.hlabels:
-                icol = self.hlabels(label).index()
-                value = self.detectorSettings.item(idet,icol)
-                self.config_new['detector_settings'][idet][label] = value
-
+                icol = self.hlabels.index(label)
+                value = self.detectorSettings.item(idet, icol).text()
+                self.config_new['detector_settings'][idet][label] = int(float(value))
 
     def loadConfiguration(self):
         """
