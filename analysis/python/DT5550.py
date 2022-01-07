@@ -18,6 +18,7 @@ class DT5550:
     DT5550 class to handle binary data
     """
     def __init__(self, **kwargs):
+        #super(DT5550, self).__init__(**kwargs)
         """
         Initialize.....
 
@@ -61,14 +62,10 @@ class DT5550:
         #
         self.Q = np.zeros(N_DETECTOR)
         self.ph = np.zeros(N_DETECTOR)
-        self.Qold = np.zeros(N_DETECTOR)
 
         self.valid = np.zeros(N_DETECTOR)
         self.valid0 = np.zeros(N_DETECTOR)
         self.valid1 = np.zeros(N_DETECTOR)
-
-        self.valid_old = np.zeros(N_DETECTOR)
-
 
         self.n_event = 0
         
@@ -81,7 +78,6 @@ class DT5550:
         self.toff = np.zeros([N_DETECTOR])
         for i in range(N_DETECTOR):
             self.toff[i] = self.config['detector_settings'][i]['TOFF']
-            #print(i,'TOFF = ',self.toff[i])
 
         return
     
@@ -121,10 +117,6 @@ class DT5550:
         """
         Read and decode a single event
         """
-        for i in range(N_DETECTOR):
-            self.Qold[i] = self.Q[i]
-            self.valid_old[i] = self.valid[i]
-        
         err = 0
         event = self.fin.read(CHUNK_SIZE)
         if not event:
@@ -161,9 +153,6 @@ class DT5550:
             i0 = 12 + ioff
             i1 = 14 + ioff
             self.Q[idet] = int.from_bytes(event[i0:i1], byteorder='little')
-
-            #if ival == 1:
-            #    print(idet,' Q =',self.Q[idet],' ph = ',self.ph[idet], 'R = ', self.Q[idet]/self.ph[idet])
 
             # make the timewalk correction
             self.t[idet] = self.t[idet]-self.toff[idet]

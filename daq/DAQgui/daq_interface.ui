@@ -171,6 +171,12 @@
      <height>38</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuExit">
+    <property name="title">
+     <string>Exit</string>
+    </property>
+   </widget>
+   <addaction name="menuExit"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
