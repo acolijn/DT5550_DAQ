@@ -6,18 +6,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1128</width>
-    <height>771</height>
+    <width>1181</width>
+    <height>747</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>DT5550 DAQ</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QTableWidget" name="detectorSettings">
     <property name="geometry">
      <rect>
-      <x>210</x>
+      <x>300</x>
       <y>190</y>
       <width>671</width>
       <height>281</height>
@@ -27,7 +27,7 @@
    <widget class="QTableWidget" name="globalSettings">
     <property name="geometry">
      <rect>
-      <x>210</x>
+      <x>300</x>
       <y>110</y>
       <width>851</width>
       <height>61</height>
@@ -38,8 +38,8 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>110</y>
-      <width>150</width>
+      <y>590</y>
+      <width>211</width>
       <height>46</height>
      </rect>
     </property>
@@ -51,8 +51,8 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>50</y>
-      <width>150</width>
+      <y>530</y>
+      <width>211</width>
       <height>46</height>
      </rect>
     </property>
@@ -63,8 +63,8 @@
    <widget class="QPushButton" name="loadConfig">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>480</y>
+      <x>20</x>
+      <y>50</y>
       <width>211</width>
       <height>46</height>
      </rect>
@@ -76,35 +76,22 @@
    <widget class="Line" name="line">
     <property name="geometry">
      <rect>
-      <x>180</x>
+      <x>250</x>
       <y>30</y>
       <width>20</width>
-      <height>491</height>
+      <height>631</height>
      </rect>
     </property>
     <property name="orientation">
      <enum>Qt::Vertical</enum>
     </property>
    </widget>
-   <widget class="Line" name="line_2">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>530</y>
-      <width>1071</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
    <widget class="QTextBrowser" name="logWindow">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>550</y>
-      <width>1071</width>
+      <x>300</x>
+      <y>520</y>
+      <width>851</width>
       <height>141</height>
      </rect>
     </property>
@@ -112,7 +99,7 @@
    <widget class="QComboBox" name="sourceSelect">
     <property name="geometry">
      <rect>
-      <x>590</x>
+      <x>680</x>
       <y>50</y>
       <width>114</width>
       <height>31</height>
@@ -122,7 +109,7 @@
    <widget class="QLineEdit" name="numberOfEvents">
     <property name="geometry">
      <rect>
-      <x>388</x>
+      <x>478</x>
       <y>50</y>
       <width>101</width>
       <height>31</height>
@@ -135,7 +122,7 @@
    <widget class="QCheckBox" name="storeWaveforms">
     <property name="geometry">
      <rect>
-      <x>740</x>
+      <x>830</x>
       <y>50</y>
       <width>143</width>
       <height>29</height>
@@ -151,7 +138,7 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>210</x>
+      <x>300</x>
       <y>50</y>
       <width>168</width>
       <height>25</height>
@@ -164,7 +151,7 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>510</x>
+      <x>600</x>
       <y>50</y>
       <width>64</width>
       <height>25</height>
@@ -180,7 +167,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1128</width>
+     <width>1181</width>
      <height>38</height>
     </rect>
    </property>

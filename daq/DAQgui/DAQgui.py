@@ -14,6 +14,8 @@ import qdarkstyle
 
 fontsize_axis = 10
 
+PYTHON = "C:\ProgramData\Anaconda3\python"
+
 # Handle high resolution displays:
 if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -37,8 +39,10 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         self.hlabels = []
         self.g_hlabels = []
         self.vlabels = []
+        self.logcounter = 0
         self.doit = QProcess()
-
+        self.doit.readyReadStandardOutput.connect(self.handle_stdout)
+        self.doit.finished.connect(self.process_finished)  # Clean up once complete.
 
         # read the default configuration file....
         self.readConfiguration()
@@ -74,21 +78,20 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         self.writeConfiguration()
         # 2. compose the run command
         nevent = int(self.numberOfEvents.text())
-        cmd = 'python runDAQ.py -n '+str(nevent)+' -c test.json '
 
+        cmd = PYTHON+r' ../ReadoutClient/runDAQ.py -n '+str(nevent)+' -c config.json '
         if self.storeWaveforms.isChecked():
             cmd = cmd + ' -w'
 
-        self.doit.readyReadStandardOutput.connect(self.handle_stdout)
-        self.doit.finished.connect(self.process_finished)  # Clean up once complete.
-        self.doit.setProgram('C:\ProgramData\Anaconda3\python')
-        self.doit.setArguments(['test_process.py'])
-        self.doit.start() #'C:\ProgramData\Anaconda3\python', ['test_process.py'])
+        #self.doit.setProgram(PYTHON)
+        #self.doit.setArguments(['test_process.py'])
+        #self.doit.start('C:\ProgramData\Anaconda3\python test_process.py')
+        self.doit.start(cmd)
 
 
     def process_finished(self):
         """
-
+        Execute this on completion of datataking. Release a few buttons etc.
         """
         self.message('process_finished:: end of run')
 
@@ -96,9 +99,12 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         self.loadConfig.setEnabled(True)
         self.run_stop.setDisabled(True)
 
-        self.doit = None
+        #self.doit = None -> with this line the program crashes
 
     def handle_stdout(self):
+        """
+        redirect the standard output of teh QProcess
+        """
         data = self.doit.readAllStandardOutput()
         stdout = bytes(data).decode("utf8")
         self.message(stdout)
@@ -107,16 +113,15 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         """
         Message parsing to log window
         """
-        #date_time = ''
-        #now = datetime.now()
-        date_time = datetime.now().strftime("%m/%d/%Y %H:%M:%S > ")
-
+        prompt_base = datetime.now().strftime("%m/%d/%Y %H:%M:%S > ")
         lines = s.split('\n')
 
         for line in lines:
             line = line.strip()
             if line != '':
-                self.logWindow.append(date_time + line)
+                prompt = '[' + str(self.logcounter) + '] ' + prompt_base
+                self.logWindow.append(prompt + line)
+                self.logcounter = self.logcounter + 1
 
     def runStop(self):
         """
@@ -140,15 +145,14 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         """
         self.readConfigurationFromTable()
 
-        filename = 'test.json'
+        filename = r'..\ReadoutClient\config.json'
         self.message("writeConfiguration:: write new config file:"+filename)
 
         f = open(filename, 'w')
-        print(self.config_new)
         json.dump(self.config_new, f, indent=4)
         f.close()
 
-        print("writeConfiguration:: done")
+        #print("writeConfiguration:: done")
 
     def readConfigurationFromTable(self):
         """
@@ -194,7 +198,7 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         self.config_file = kwargs.pop('config_file', 'None')
         if self.config_file == 'None':
             self.config_file = self.default_config_file
-        print('readConfiguration:: read config from: ', self.config_file)
+        self.message('readConfiguration:: read config from: '+self.config_file)
 
         f = open(self.config_file, 'r')
         self.config = json.load(f)

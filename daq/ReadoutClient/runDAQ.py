@@ -3,11 +3,14 @@ import getopt
 import os
 from datetime import datetime
 
+PYTHON = "C:\ProgramData\Anaconda3\python"
 #-----------------------------------------------------------------------------------------------------------------------
 def main(argv):
     """
     MAIN CODE
     """
+
+    os.chdir('../ReadOutClient/')
 
     n_event_per_file = 100000
     config_file = ""
@@ -39,7 +42,7 @@ def main(argv):
     #
     # make smaller runs. will save the events in multiple files
     #
-    nrun = int(n_event / n_event_per_file) + 1
+    nrun = int((n_event-1) / n_event_per_file) + 1
 
     # initialize daq
     date_tag = datetime.today().strftime('%Y%m%d_%H%M%S')
@@ -58,8 +61,9 @@ def main(argv):
     # copy configuration file to the output directory
     #
     tmp = config_file.split('.')
-    cmd = 'copy '+config_file+r' "'+outdir+tmp[0]+'_'+date_tag+'.json'+r' "'
-    print('Copy config file to output directory')
+    print(tmp)
+    cmd = 'copy '+config_file+r' "'+outdir+'config_'+date_tag+'.json'+r' "'
+    print('Copy config file to output directory::', cmd)
     os.system(cmd)
 
     #
@@ -72,15 +76,17 @@ def main(argv):
             n_proc = n_event % n_event_per_file
 
         output_file = outdir + "/data_" +date_tag + "_" + str(irun) + ".raw"
-        cmd = "C:/ProgramData/Anaconda3/python DT5550_Readout.py -n "+str(n_proc)+" -c "+config_file+" -o " + output_file + " -m data"
+        cmd = PYTHON+" DT5550_Readout.py -n "+str(n_proc)+" -c "+config_file+" -o " + output_file + " -m data"
         if irun > 0:
             cmd = cmd + " -i"
         # run the DAQ
+        print(cmd)
         os.system(cmd)
 
         if save_waveform:
             output_file = outdir + "/waveform_" +date_tag + "_" + str(irun) + ".raw"
-            cmd = "C:/ProgramData/Anaconda3/python DT5550_Readout.py -n 25  -c " + config_file + " -o " + output_file + " -i -m osc"
+            cmd = PYTHON+" DT5550_Readout.py -n 25  -c " + config_file + " -o " + output_file + " -i -m osc"
+            print(cmd)
             os.system(cmd)
 
     print("Exit runDAQ")
