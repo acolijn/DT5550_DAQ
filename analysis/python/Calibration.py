@@ -224,9 +224,9 @@ class Calibration(DT5550):
         config_file_cal = self.config_file
         print('write_calibration:: calibration constants to ', config_file_cal)
 
-        fout = open(config_file_cal, "w")
-        json.dump(self.config, fout, indent=4)
-        fout.close()
+        # here the actual write is done....
+        self.write_config_file()
+
 
     def calculate_gains(self, **kwargs):
         """

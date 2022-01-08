@@ -135,7 +135,6 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
         elif self.tab_2.isVisible():
             self.drawBaseline()
 
-
     def drawBaseline(self):
         """
         1. Draw the baseline histograms.
@@ -168,7 +167,6 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
 
 
         self.plotBaselineWidget.canvas.draw()
-
 
     def drawPlot(self):
         """

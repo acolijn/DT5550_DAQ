@@ -207,4 +207,11 @@ class DT5550_Waveform:
         plt.show()
 
         return fig
-    
+
+    def write_config_file(self):
+        """
+        Overwrite the configuration file with the current values of the settings
+        """
+        fout = open(self.config_file, "w")
+        json.dump(self.config, fout, indent=4)
+        fout.close()
