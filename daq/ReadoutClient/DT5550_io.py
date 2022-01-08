@@ -40,6 +40,7 @@ class DT5550_io:
         self.config_data = json.load(f)
         f.close()
 
+
         return
 
     def IO_initialize_daq(self):

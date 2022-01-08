@@ -204,6 +204,28 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         self.config = json.load(f)
         f.close()
 
+        # the gain corrections that were found from the calibration process will now be
+        # incorporated into new gain values
+        self.correct_gains()
+
+    def correct_gains(self):
+        """
+        Correct the gains from the gain corrections found from a previous calibration
+        1. correct gains, so that the correct gains will be used in the new run
+        2. set the gain coorrections to one
+        """
+
+        self.message('correct_gains:: apply gain corrections to GAIN')
+
+        for idet in range(N_DETECTOR):
+            gain = self.config['detector_settings'][idet]['GAIN']
+            corr = 1.0
+            if 'GCOR' in self.config['detector_settings'][idet].keys():
+                corr = self.config['detector_settings'][idet]['GCOR']
+            self.message(str(idet)+" "+str(gain)+" "+str(corr))
+            self.config['detector_settings'][idet]['GAIN'] = gain*corr
+            self.config['detector_settings'][idet]['GCOR'] = 1.0
+
     def initGlobalSettingsTable(self):
         """
         Global settings for the fADC settings, integration settings, DT5550AFE settings
@@ -259,7 +281,7 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
             for label in self.hlabels:
                 icol = self.hlabels.index(label)
                 val = self.config['detector_settings'][idet][label]
-                table.setItem(idet, icol, QTableWidgetItem(str(val)))
+                table.setItem(idet, icol, QTableWidgetItem(str(int(val))))
 
 
 def main():

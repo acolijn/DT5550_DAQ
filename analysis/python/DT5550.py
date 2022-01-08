@@ -27,13 +27,13 @@ class DT5550:
 
         self.indir = kwargs.pop('indir', 'None')
         self.filename = kwargs.pop('file', 'None')
+        self.config_file = kwargs.pop('config', 'None')
         
         #
         # if no filename is given we analyze all files in the directory indir
         #
         self.filenames = []
         self.fin = ''
-        self.config_file = 'None'
 
         if self.filename == 'None':
             self.filenames = glob.glob(self.indir+'/data_*.raw')
@@ -41,7 +41,9 @@ class DT5550:
             self.filenames = glob.glob(self.filename)
             self.indir = os.path.dirname(self.filenames[0])
 
-        self.config_file = glob.glob(self.indir + '/config*.json')[0]
+        if self.config_file == 'None':
+            self.config_file = glob.glob(self.indir + '/config*.json')[0]
+
         print('DT5550:: Data recorded with config: ', self.config_file)
         f = open(self.config_file,'r')
         self.config = json.load(f)

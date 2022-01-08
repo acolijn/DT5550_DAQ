@@ -19,75 +19,83 @@
     "detector_settings": [
         {
             "det_id": 0,
-            "GAIN": 1892,
+            "GAIN": 1881,
             "THRS": 50,
             "INVERT": 1,
             "BASE": 403,
             "TOFF": 0,
-            "HV": 500
+            "HV": 500,
+            "GCOR": 1.0
         },
         {
             "det_id": 1,
-            "GAIN": 2046,
+            "GAIN": 2081,
             "THRS": 50,
             "INVERT": 1,
             "BASE": 661,
             "TOFF": 15,
-            "HV": 460
+            "HV": 460,
+            "GCOR": 1.0
         },
         {
             "det_id": 2,
-            "GAIN": 1915,
+            "GAIN": 1930,
             "THRS": 50,
             "INVERT": 1,
             "BASE": 345,
             "TOFF": 0,
-            "HV": 780
+            "HV": 780,
+            "GCOR": 1.0
         },
         {
             "det_id": 3,
-            "GAIN": 1718,
+            "GAIN": 1756,
             "THRS": 50,
             "INVERT": 1,
             "BASE": 367,
             "TOFF": 9,
-            "HV": 510
+            "HV": 510,
+            "GCOR": 1.0
         },
         {
             "det_id": 4,
-            "GAIN": 5686,
+            "GAIN": 6243,
             "THRS": 30,
             "INVERT": 1,
             "BASE": 370,
             "TOFF": 3,
-            "HV": 650
+            "HV": 650,
+            "GCOR": 1.0
         },
         {
             "det_id": 5,
-            "GAIN": 3170,
+            "GAIN": 3219,
             "THRS": 50,
             "INVERT": 1,
             "BASE": 594,
             "TOFF": 12,
-            "HV": 500
+            "HV": 500,
+            "GCOR": 1.0
         },
         {
             "det_id": 6,
-            "GAIN": 1400,
+            "GAIN": 1413,
             "THRS": 50,
             "INVERT": 1,
             "BASE": 604,
             "TOFF": 7,
-            "HV": 590
+            "HV": 590,
+            "GCOR": 1.0
         },
         {
             "det_id": 7,
-            "GAIN": 1712,
+            "GAIN": 1737,
             "THRS": 50,
             "INVERT": 1,
             "BASE": 717,
             "TOFF": 10,
-            "HV": 500
+            "HV": 500,
+            "GCOR": 1.0
         }
     ],
     "waveform_settings": {
