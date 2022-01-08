@@ -164,7 +164,7 @@ class Calibration(DT5550):
         for idet in range(N_DETECTOR):
             plt.subplot(4, 2, 1+idet)
             if idet != 0:
-                txt = 'CH{:1d} $\mu$ = {:3.1f} ns'.format(idet,self.time_offset[idet])
+                txt = 'CH{:1d} $\mu$ = {:3.1f} ns'.format(idet, self.time_offset[idet])
                 plt.hist(self.delta_time[idet][abs(self.delta_time[idet]) < self.delta_time_max],
                          bins=100, range=(-self.delta_time_max, +self.delta_time_max), label=txt)
                 txt = '$t_{:1d}-t_0$ (ns)'.format(idet)
