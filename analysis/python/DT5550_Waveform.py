@@ -58,6 +58,10 @@ class DT5550_Waveform:
 
         self.end_of_data = False
 
+        self.baseline = np.zeros(N_DETECTOR)
+        self.baseline_err = np.zeros(N_DETECTOR)
+        self.baseline_sigma = np.zeros(N_DETECTOR)
+
         return
 
     def open_data(self, filename):
@@ -123,6 +127,9 @@ class DT5550_Waveform:
         """
         baseline = self.config["detector_settings"][idet]["BASE"]
         gain = self.config["detector_settings"][idet]["GAIN"]
+        corr = 1.0
+        if "GCOR" in self.config["detector_settings"][idet].keys():
+            corr = self.config["detector_settings"][idet]["GCOR"]
         inttime = self.config["registers"]["INTTIME"]
         
         idx = 0
@@ -132,7 +139,7 @@ class DT5550_Waveform:
                 break
         
         wave = (self.analog[idet, idx:idx+inttime]-baseline)  # *self.digital[3,idet,:]
-        Q = (wave.sum()) / MAX16BIT * gain
+        Q = (wave.sum()) / MAX16BIT * gain * corr
         
         return Q
     
@@ -145,15 +152,23 @@ class DT5550_Waveform:
         peak = wave.max()
         
         return peak
+
+    def calculateBaseline(self, idet):
+        """
+        Calculate the baseline from the waveform data
+        """
+
+        vals = self.analog[idet][0:100] * self.digital[2, idet][0:100]
+        vals = vals[vals > 0]
+        self.baseline[idet] = vals.mean()
+        self.baseline_sigma[idet] = np.sqrt(vals.var())
+        self.baseline_err[idet] = self.baseline_sigma[idet] / np.sqrt(len(vals))
+        print('calculateBaseline:: idet =', idet,' baseline =', self.baseline[idet])
     
     def plot_waveform(self, plot_range):
         """
         Plot the waveform
-
         """
-        
-        #print(plot_range)
-  
         # plot single event
         imin = 0
         imax = 1022
@@ -208,10 +223,19 @@ class DT5550_Waveform:
 
         return fig
 
+    def baseline_to_config(self):
+        """
+        Modify the configuration dictionary with the new baseline values
+        """
+
+        for idet in range(N_DETECTOR):
+            self.config['detector_settings'][idet]['BASE'] = self.baseline[idet]
+
     def write_config_file(self):
         """
         Overwrite the configuration file with the current values of the settings
         """
+        print("write_config_file:: write config to ", self.config_file)
         fout = open(self.config_file, "w")
         json.dump(self.config, fout, indent=4)
         fout.close()

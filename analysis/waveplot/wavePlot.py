@@ -31,7 +31,8 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
         # setup the GUI
         self.setupUi(self)
         # initialize the widget functionality
-        self.plotIt.clicked.connect(self.readAndDraw)
+        self.plotIt.clicked.connect(self.read_and_draw)
+        self.saveBaseline.clicked.connect(self.save_the_baseline)
         # check boxes to select the channels
         self.checkers = [self.channel_0, self.channel_1, self.channel_2, self.channel_3,
                          self.channel_4, self.channel_5, self.channel_6, self.channel_7]
@@ -45,46 +46,68 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
 
         # disable all buttons... enable after a file is opened
         self.enableButtons(False)
+        # baseline saving button only visible if the baseline tab is selected
+        self.saveBaseline.setVisible(False)
 
         self.folderpath = ''
         self.draw_hold = False
 
-        self.actionExit.triggered.connect(self.exitAction)
-        self.actionOpenDir.triggered.connect(self.selectDataDir)
-        self.actionOpenFile.triggered.connect(self.selectDataFile)
+        self.actionExit.triggered.connect(self.exit_action)
+        self.actionOpenDir.triggered.connect(self.select_data_dir)
+        self.actionOpenFile.triggered.connect(self.select_data_file)
 
-        self.tabWidget.currentChanged.connect(self.tabPlot)
+        self.tabWidget.currentChanged.connect(self.tab_plot)
 
-    def tabPlot(self):
+    def save_the_baseline(self):
+        """
+        Overwrite the configurations and write to file
+        """
 
+        print("save_the_baseline:: overwrite config and values to config file")
+        self.baseline_to_config()
+        self.write_config_file()
+
+    def tab_plot(self):
+        """
+        plot: tab=waveform tab2=baseline
+        """
         if self.tab.isVisible():
+            self.saveBaseline.setVisible(False)
             self.drawPlot()
         elif self.tab_2.isVisible():
+            self.saveBaseline.setEnabled(False)
             self.drawBaseline()
+            self.saveBaseline.setVisible(True)
+            self.saveBaseline.setEnabled(True)
 
-    def exitAction(self):
+    def exit_action(self):
         sys.exit(0)
 
-    def selectDataFile(self):
+    def select_data_file(self):
+        """
+        Select the datafile and initialize the DT5550_Waveform class
+        """
         self.filename = QtWidgets.QFileDialog.getOpenFileName(self, 'Select input waveform', r'C:\\data')[0]
         if self.filename == '':
             return
 
         DT5550_Waveform.__init__(self, file=self.filename)
 
-        self.readAndDraw()
+        self.read_and_draw()
 
         self.enableButtons(True)  # now all buttons can be anabled
 
-    def selectDataDir(self):
-
+    def select_data_dir(self):
+        """
+        Select the data directory and initialize the DT5550_Waveform class
+        """
         self.folderpath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select input folder', r'C:\\data')
         fnames = glob.glob(self.folderpath + r'\wave*.raw')
         if len(fnames) == 0:
             return
 
         DT5550_Waveform.__init__(self, indir=self.folderpath)
-        self.readAndDraw()
+        self.read_and_draw()
 
         self.enableButtons(True)  # now all buttons can be anabled
 
@@ -124,7 +147,7 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
             elif self.tab_2.isVisible():
                 self.drawBaseline()
 
-    def readAndDraw(self):
+    def read_and_draw(self):
         # read the next event
         if self.read_event() == -1:
             self.plotIt.setEnabled(False)
@@ -134,6 +157,7 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
             self.drawPlot()
         elif self.tab_2.isVisible():
             self.drawBaseline()
+
 
     def drawBaseline(self):
         """
@@ -152,12 +176,17 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
         for irow in range(nrow):
             for icol in range(ncol):
                 idet = irow*2+icol
-                vals = self.analog[idet][0:100]*self.digital[2, idet][0:100]
+                # calculate the baseline from the first 100bins of the waveform
+                self.calculateBaseline(idet)
+                # and now plot the baseline
+                txt = 'CH {:1d} \n$\mu$ = {:>5.1f} $\pm$ {:>3.1f}\n$\sigma$ = {:>5.1f}'.format(idet,
+                                                                                               self.baseline[idet],
+                                                                                               self.baseline_err[idet],
+                                                                                               self.baseline_sigma[idet])
+
+                vals = self.analog[idet][0:100] * self.digital[2, idet][0:100]
                 vals = vals[vals > 0]
-                mu = vals.mean()
-                sig = np.sqrt(vals.var())
-                num = len(vals)
-                txt = 'CH {:1d} \n$\mu$ = {:>5.1f} $\pm$ {:>3.1f}\n$\sigma$ = {:>5.1f}'.format(idet, mu, sig/np.sqrt(num), sig)
+
                 n, bins, patches = axs[irow, icol].hist(vals, bins=500, range=(0, 1000), label=txt)
                 elem = np.argmax(n)
                 #print('max = ', elem, bins[elem])
@@ -167,6 +196,7 @@ class WavePlotter(QMainWindow, wave_gui.Ui_MainWindow, DT5550_Waveform):
 
 
         self.plotBaselineWidget.canvas.draw()
+
 
     def drawPlot(self):
         """
