@@ -119,6 +119,10 @@ class DT5550:
         Read and decode a single event
         """
         err = 0
+
+        #
+        # this is the actual read from the data
+        #
         event = self.fin.read(CHUNK_SIZE)
         if not event:
             err = -1
@@ -126,53 +130,60 @@ class DT5550:
 
         self.n_event = self.n_event+1
 
+        #
+        # process the data
+        #
         for idet in range(N_DETECTOR):
+            #  offset to data
             ioff = idet * CHANNEL_SIZE
-            
-            # decode pulse height
-            i0 = 14 + ioff
-            i1 = 16 + ioff
-            self.ph[idet] = (int.from_bytes(event[i0:i1], byteorder='little') & 0x3FFF)
 
-            # decode valid bit
+            #  decode valid bits
             i0 = 15 + ioff
             i1 = 16 + ioff
             ival0 = (int.from_bytes(event[i0:i1], byteorder='little') & 0x80) >> 7
             ival1 = (int.from_bytes(event[i0:i1], byteorder='little') & 0x40) >> 6
-            # print(idet,'v0',ival0,'v1',ival1)
-            # ival = (ival0 & ival1)
-            self.valid0[idet] = ival0
-            self.valid0[idet] = ival1
+
+            self.valid0[idet] = ival0  # valid charge measurement
+            self.valid1[idet] = ival1  # valid time measurement
             ival = (ival0 & ival1)
             self.valid[idet] = ival
 
-            # decode time
-            i0 = 8 + ioff
-            i1 = 12 + ioff
-            self.t[idet] = int.from_bytes(event[i0:i1], byteorder='little')*self.clock_speed/self.fine_time_bins
-            # decode charge
-            i0 = 12 + ioff
-            i1 = 14 + ioff
-            gcor = 1.0
-            if self.found_gain_correction:
-                gcor = self.config['detector_settings'][idet]['GCOR']
-            self.Q[idet] = int.from_bytes(event[i0:i1], byteorder='little')*gcor
+            # reset the measured values
+            self.Q[idet] = 0
+            self.ph[idet] = 0
+            self.t[idet] = 0
+            self.tc[idet] = 0
+            # only fill if there is valid data on this detector
+            if ival:
+                # decode time
+                i0 = 8 + ioff
+                i1 = 12 + ioff
+                self.t[idet] = int.from_bytes(event[i0:i1], byteorder='little')*self.clock_speed/self.fine_time_bins
+                self.t[idet] = self.t[idet]*ival
+                # decode pulse height
+                i0 = 14 + ioff
+                i1 = 16 + ioff
+                self.ph[idet] = (int.from_bytes(event[i0:i1], byteorder='little') & 0x3FFF)
+                # decode charge
+                i0 = 12 + ioff
+                i1 = 14 + ioff
+                gcor = 1.0
+                if self.found_gain_correction:
+                    gcor = self.config['detector_settings'][idet]['GCOR']
+                self.Q[idet] = int.from_bytes(event[i0:i1], byteorder='little')*gcor
+                self.Q[idet] = self.Q[idet]*ival
 
-            # make the timewalk correction
-            self.t[idet] = self.t[idet]-self.toff[idet]
-            if ival == 1:
+                #  make the timewalk correction
+                self.t[idet] = self.t[idet]-self.toff[idet]
                 dt = self.timewalk_correct(idet)
                 self.tc[idet] = self.t[idet] - dt
-            
 
-            # dictonary with charge
-            if ival:
+                #  dictonary with charge
                 binname = int(np.floor(self.Q[idet] / self.Q_binwidth) * self.Q_binwidth)
                 if binname not in self.charges[idet]:
                     self.charges[idet][binname] = 0
                 self.charges[idet][binname] += 1
-            # histogramming time
-            if ival:
+                # histogramming time
                 binname = int(np.floor(self.tc[idet] / self.t_binwidth) * self.t_binwidth)
                 if binname not in self.times[idet]:
                     self.times[idet][binname] = 0
@@ -195,7 +206,7 @@ class DT5550:
         if plot_range[0] == -1:
             plot_range = (0, max(mylist))
         
-        plt.hist(mylist, bins=bins, range=plot_range)
+        plt.hist(mylist, bins=bins, range=plot_range, histtype='step', color='blue')
         plt.title("id ="+str(idet), x=0.9, y=0.85)
         if logy:
             plt.yscale('log')
@@ -221,7 +232,7 @@ class DT5550:
         if plot_range[0] == -1:
             plot_range = (0, max(mylist))
 
-        plt.hist(mylist, bins=bins, range=plot_range)
+        plt.hist(mylist, bins=bins, range=plot_range, histtype='step', color='blue')
         plt.title("id ="+str(idet), x=0.9, y=0.85)
         if logy:
             plt.yscale('log')
