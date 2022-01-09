@@ -88,12 +88,9 @@ class DT5550:
         return
     
     def timewalk_correct(self, idet):
-        
-        # not needed anymore, since we now directly measure the peak height.....
-        # Q = self.Q[idet]
-        # peak = Q*self.area_to_peak  # always the same conversion factor
-        #
-        
+        """
+        Timewalk correction: base on 8th order Chebyshev fit of the pulse shape.
+        """
         alpha = 0
         peak = self.ph[idet]
         if peak != 0:
@@ -107,8 +104,6 @@ class DT5550:
             alpha = 0
             
         dt = cheb.chebval(alpha, self.cheb_param)*self.clock_speed
-        # print('peak = ',peak,' Q =',Q,' THRS =',self.config['detector_settings'][idet]['THRS'],
-        # ' alpha = ',alpha,' dt = ',dt)
 
         return dt
 
