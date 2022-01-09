@@ -48,7 +48,11 @@ class DT5550:
         f = open(self.config_file,'r')
         self.config = json.load(f)
         f.close()
-        
+
+        self.found_gain_correction = False
+        if 'GCOR' in self.config['detector_settings'][0].keys():
+            self.found_gain_correction = True
+
         self.charges = [dict() for _ in range(N_DETECTOR)]
         self.Q_binwidth = 10
         
@@ -154,7 +158,10 @@ class DT5550:
             # decode charge
             i0 = 12 + ioff
             i1 = 14 + ioff
-            self.Q[idet] = int.from_bytes(event[i0:i1], byteorder='little')
+            gcor = 1.0
+            if self.found_gain_correction:
+                gcor = self.config['detector_settings'][idet]['GCOR']
+            self.Q[idet] = int.from_bytes(event[i0:i1], byteorder='little')*gcor
 
             # make the timewalk correction
             self.t[idet] = self.t[idet]-self.toff[idet]
@@ -162,7 +169,7 @@ class DT5550:
                 dt = self.timewalk_correct(idet)
                 self.tc[idet] = self.t[idet] - dt
             
-            
+
             # dictonary with charge
             if ival:
                 binname = int(np.floor(self.Q[idet] / self.Q_binwidth) * self.Q_binwidth)

@@ -29,9 +29,7 @@ class Calibration(DT5550):
         self.gain_fit = np.zeros([N_DETECTOR, 3])
         self.gain_binwidth = 5
 
-        self.found_gain_correction = False
-        if 'GCOR' in self.config['detector_settings'][0].keys():
-            self.found_gain_correction = True
+
 
         # calibration result
         self.time_offset = np.zeros(N_DETECTOR)
@@ -67,10 +65,7 @@ class Calibration(DT5550):
                 #
                 for idet in range(N_DETECTOR):
                     if self.valid[idet]:
-                        gcor = 1.0
-                        if self.found_gain_correction:
-                            gcor = self.config['detector_settings'][idet]['GCOR']
-                        self.raw_energy[idet].append(self.Q[idet]*gcor)
+                        self.raw_energy[idet].append(self.Q[idet])
 
                 #
                 #  For time offset calibrations:: select events with two valid hits
@@ -235,6 +230,8 @@ class Calibration(DT5550):
 
         # bin width for the histogramming
         self.gain_binwidth = kwargs.pop('binwidth', self.gain_binwidth)
+        write_config = kwargs.pop('write_config', False)
+        plot_it = kwargs.pop('plot', False)
 
         source = self.config['source']
         self.energy_calibration_point = -1
@@ -261,6 +258,11 @@ class Calibration(DT5550):
                                                  range=(fit_est[0]-de, fit_est[0]+de))
             self.gain_correction[idet] = self.energy_calibration_point / self.gain_fit[idet][0]
 
+        if write_config:
+            self.write_calibration()
+
+        if plot_it:
+            self.plot_gain_calibration()
 
     def estimate_peak_position(self, idet, **kwargs):
         """
