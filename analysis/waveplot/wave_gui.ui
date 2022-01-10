@@ -110,7 +110,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>330</y>
+      <y>520</y>
       <width>120</width>
       <height>20</height>
      </rect>
@@ -122,12 +122,25 @@
      <bool>true</bool>
     </property>
    </widget>
+   <widget class="QPushButton" name="saveBaseline">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>665</y>
+      <width>101</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Save Baseline</string>
+    </property>
+   </widget>
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>50</y>
-      <width>193</width>
+      <y>30</y>
+      <width>131</width>
       <height>480</height>
      </rect>
     </property>
@@ -213,19 +226,6 @@
      </item>
     </layout>
    </widget>
-   <widget class="QPushButton" name="saveBaseline">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>660</y>
-      <width>150</width>
-      <height>46</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Save Baseline</string>
-    </property>
-   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -233,7 +233,7 @@
      <x>0</x>
      <y>0</y>
      <width>860</width>
-     <height>38</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

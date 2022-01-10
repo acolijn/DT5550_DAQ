@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'wave_gui.ui'
+# Form implementation generated from reading ui file '.\wave_gui.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -53,11 +53,14 @@ class Ui_MainWindow(object):
         self.plotBaselineWidget.setObjectName("plotBaselineWidget")
         self.tabWidget.addTab(self.tab_2, "")
         self.baselineSubtract = QtWidgets.QCheckBox(self.centralwidget)
-        self.baselineSubtract.setGeometry(QtCore.QRect(20, 330, 120, 20))
+        self.baselineSubtract.setGeometry(QtCore.QRect(20, 520, 120, 20))
         self.baselineSubtract.setChecked(True)
         self.baselineSubtract.setObjectName("baselineSubtract")
+        self.saveBaseline = QtWidgets.QPushButton(self.centralwidget)
+        self.saveBaseline.setGeometry(QtCore.QRect(30, 665, 101, 41))
+        self.saveBaseline.setObjectName("saveBaseline")
         self.layoutWidget = QtWidgets.QWidget(self.centralwidget)
-        self.layoutWidget.setGeometry(QtCore.QRect(20, 50, 193, 480))
+        self.layoutWidget.setGeometry(QtCore.QRect(20, 30, 131, 480))
         self.layoutWidget.setObjectName("layoutWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.layoutWidget)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -95,12 +98,9 @@ class Ui_MainWindow(object):
         self.trigger_sel.setChecked(True)
         self.trigger_sel.setObjectName("trigger_sel")
         self.verticalLayout.addWidget(self.trigger_sel)
-        self.saveBaseline = QtWidgets.QPushButton(self.centralwidget)
-        self.saveBaseline.setGeometry(QtCore.QRect(30, 660, 150, 46))
-        self.saveBaseline.setObjectName("saveBaseline")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 860, 38))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 860, 21))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
@@ -142,6 +142,7 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Waveform"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Baseline"))
         self.baselineSubtract.setText(_translate("MainWindow", "subtract baseline"))
+        self.saveBaseline.setText(_translate("MainWindow", "Save Baseline"))
         self.selectALL.setText(_translate("MainWindow", "ALL"))
         self.channel_0.setText(_translate("MainWindow", "channel 0"))
         self.channel_1.setText(_translate("MainWindow", "channel 1"))
@@ -152,7 +153,6 @@ class Ui_MainWindow(object):
         self.channel_6.setText(_translate("MainWindow", "channel 6"))
         self.channel_7.setText(_translate("MainWindow", "channel 7"))
         self.trigger_sel.setText(_translate("MainWindow", "show trigger"))
-        self.saveBaseline.setText(_translate("MainWindow", "Save Baseline"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.actionOpenDir.setText(_translate("MainWindow", "Open directory...."))
         self.actionExit.setText(_translate("MainWindow", "Exit"))
