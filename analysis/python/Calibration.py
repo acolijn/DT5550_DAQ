@@ -19,6 +19,7 @@ class Calibration(DT5550):
         super(Calibration, self).__init__(**kwargs)
 
         self.raw_energy = [[] for _ in range(N_DETECTOR)]
+        self.pulse_ratio = [[] for _ in range(N_DETECTOR)]
         self.delta_time = [[] for _ in range(N_DETECTOR)]
         self.delta_time_all = []
         self.delta_time_all_nocorr = []
@@ -30,10 +31,10 @@ class Calibration(DT5550):
         self.gain_binwidth = 5
 
 
-
         # calibration result
         self.time_offset = np.zeros(N_DETECTOR)
         self.gain_correction = np.ones(N_DETECTOR)
+        self.pulse_ratio_mean = np.zeros(N_DETECTOR)
 
     def set_energy_min(self, emin):
         self.energy_min = emin
@@ -66,6 +67,7 @@ class Calibration(DT5550):
                 for idet in range(N_DETECTOR):
                     if self.valid[idet]:
                         self.raw_energy[idet].append(self.Q[idet])
+                        self.pulse_ratio[idet].append(self.R[idet])
 
                 #
                 #  For time offset calibrations:: select events with two valid hits
@@ -97,10 +99,30 @@ class Calibration(DT5550):
         #
         self.delta_time = np.array([np.array(x) for x in self.delta_time], dtype=object)
         self.raw_energy = np.array([np.array(x) for x in self.raw_energy], dtype=object)
+        self.pulse_ratio = np.array([np.array(x) for x in self.pulse_ratio], dtype=object)
         self.delta_time_all = np.array(self.delta_time_all)
         self.delta_time_all_nocorr = np.array(self.delta_time_all_nocorr)
         print("Calibration::calculate_time_offsets:: Done....")
 
+    def calculate_pulse_ratio(self, **kwargs):
+        """
+        Calculate average peak / area ratio for all channels
+        """
+        write_config = kwargs.pop('write_config', False)
+        plot_it = kwargs.pop('plot', False)
+
+        print('calculate_pulse_ratio:: Calculate the mean pk/charge ratio' )
+        for idet in range(N_DETECTOR):
+            vals = self.pulse_ratio[idet]
+            fit = self.gauss_fit(vals, range=(vals.mean() - 100, vals.mean() + 100), bins=bins)
+            print(idet,' <R> = ',fit[0], ' A = ', fit[1],' $\sigma$ =', fit[2])
+            self.pulse_ratio_mean[idet] = fit[0]
+
+        if write_config:
+            self.write_calibration()
+
+        if plot_it:
+            self.plot_ratio_calibration()
 
     def calculate_time_offsets(self, **kwargs):
         """
@@ -149,6 +171,20 @@ class Calibration(DT5550):
         fit_par, _ = curve_fit(self.gauss, x, y, p0=p0)
 
         return fit_par
+
+    def plot_ratio_calibration(self):
+        """
+        Plot the peak/area calibration histograms
+        """
+        plt.figure(figsize=(10, 15))
+
+        for idet in range(N_DETECTOR):
+            plt.subplot(4, 2, 1+idet)
+            txt = 'CH{:1d} $<R>$ = {:3.1f} ns'.format(idet, self.pulse_ratio_mean[idet])
+            plt.hist(self.pulse_ratio[idet], bins=100, range=(0, 2000), label=txt)
+            txt = 'R'.format(idet)
+            plt.xlabel(txt)
+            plt.legend(loc='upper left')
 
     def plot_time_calibration(self):
         """
@@ -213,8 +249,9 @@ class Calibration(DT5550):
             gcor = 1.0
             if "GCOR" in self.config['detector_settings'][idet].keys():
                 gcor = self.config['detector_settings'][idet]['GCOR']
-
             self.config['detector_settings'][idet]['GCOR'] = self.gain_correction[idet]*gcor
+            # average pulse ratio
+            self.config['detector_settings'][idet]['RMEAN'] = self.pulse_ratio_mean[idet]
 
         config_file_cal = self.config_file
         print('write_calibration:: calibration constants to ', config_file_cal)

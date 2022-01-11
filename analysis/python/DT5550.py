@@ -68,6 +68,7 @@ class DT5550:
         #
         self.Q = np.zeros(N_DETECTOR)
         self.ph = np.zeros(N_DETECTOR)
+        self.R = np.zeros(N_DETECTOR)
 
         self.valid = np.zeros(N_DETECTOR)
         self.valid0 = np.zeros(N_DETECTOR)
@@ -167,11 +168,16 @@ class DT5550:
                 # decode charge
                 i0 = 12 + ioff
                 i1 = 14 + ioff
+
+                gain = self.config['detector_settings'][idet]['GAIN']
                 gcor = 1.0
                 if self.found_gain_correction:
                     gcor = self.config['detector_settings'][idet]['GCOR']
-                self.Q[idet] = int.from_bytes(event[i0:i1], byteorder='little')*gcor
-                self.Q[idet] = self.Q[idet]*ival
+                self.Q[idet] = int.from_bytes(event[i0:i1], byteorder='little')
+                if self.Q[idet] > 0.:
+                    self.R[idet] = self.ph[idet] * gain / self.Q[idet]
+
+                self.Q[idet] = self.Q[idet]*gcor*ival
 
                 #  make the timewalk correction
                 self.t[idet] = self.t[idet]-self.toff[idet]
