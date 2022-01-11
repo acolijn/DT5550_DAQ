@@ -30,11 +30,15 @@ class Calibration(DT5550):
         self.gain_fit = np.zeros([N_DETECTOR, 3])
         self.gain_binwidth = 5
 
+        self.ratio_fit = np.zeros([N_DETECTOR, 3])
+        self.ratio_binwidth = 10
 
         # calibration result
         self.time_offset = np.zeros(N_DETECTOR)
         self.gain_correction = np.ones(N_DETECTOR)
         self.pulse_ratio_mean = np.zeros(N_DETECTOR)
+        self.pulse_ratio_sigma = np.zeros(N_DETECTOR)
+
 
     def set_energy_min(self, emin):
         self.energy_min = emin
@@ -108,18 +112,25 @@ class Calibration(DT5550):
         """
         Calculate average peak / area ratio for all channels
         """
+        self.ratio_binwidth = kwargs.pop('binwidth', self.ratio_binwidth)
+
         write_config = kwargs.pop('write_config', False)
         plot_it = kwargs.pop('plot', False)
 
         print('calculate_pulse_ratio:: Calculate the mean pk/charge ratio' )
         for idet in range(N_DETECTOR):
             vals = self.pulse_ratio[idet]
-            fit = self.gauss_fit(vals, range=(vals.mean() - 100, vals.mean() + 100), bins=bins)
-            print(idet,' <R> = ',fit[0], ' A = ', fit[1],' $\sigma$ =', fit[2])
+            mean = vals.mean()
+            fit = self.gauss_fit(vals, p0=(mean, 1, 10),  range=(mean - 100, mean + 100),
+                                 bins=int(200/self.ratio_binwidth))
+            print(idet,' <R> = ',fit[0], ' A = ', fit[1], ' sig = ', fit[2])
+            self.ratio_fit[idet] = fit
             self.pulse_ratio_mean[idet] = fit[0]
+            self.pulse_ratio_sigma[idet] = abs(fit[2])
+
 
         if write_config:
-            self.write_calibration()
+            self.write_calibration(calibration_type='ratio')
 
         if plot_it:
             self.plot_ratio_calibration()
@@ -142,7 +153,7 @@ class Calibration(DT5550):
             print('calculate_time_offsets::', idet, ' dt =', self.time_offset[idet], 'ns')
 
         if write_config:
-            self.write_calibration()
+            self.write_calibration(calibration_type='time_offset')
 
         if plot_it:
             self.plot_time_calibration()
@@ -172,17 +183,26 @@ class Calibration(DT5550):
 
         return fit_par
 
-    def plot_ratio_calibration(self):
+    def plot_ratio_calibration(self, **kwargs):
         """
         Plot the peak/area calibration histograms
         """
         plt.figure(figsize=(10, 15))
 
+        plot_range = kwargs.pop('range', (1000, 2000))
+        bins = int((plot_range[1] - plot_range[0]) / self.ratio_binwidth)
+
         for idet in range(N_DETECTOR):
             plt.subplot(4, 2, 1+idet)
-            txt = 'CH{:1d} $<R>$ = {:3.1f} ns'.format(idet, self.pulse_ratio_mean[idet])
-            plt.hist(self.pulse_ratio[idet], bins=100, range=(0, 2000), label=txt)
-            txt = 'R'.format(idet)
+            txt = 'CH{:1d} \n$<R>$ = {:3.1f} \n$\sigma$ = {:3.1f}'.format(idet,
+                                                                          self.pulse_ratio_mean[idet],
+                                                                          self.pulse_ratio_sigma[idet])
+            plt.hist(self.pulse_ratio[idet], bins=bins, range=plot_range, label=txt, histtype='step', color='blue')
+            x_fine = np.linspace(plot_range[0], plot_range[1], 500)
+            f = self.ratio_fit[idet]
+            plt.plot(x_fine, self.gauss(x_fine, f[0], f[1], f[2]), color='red', linewidth=1)
+
+            txt = 'R_{:1d}'.format(idet)
             plt.xlabel(txt)
             plt.legend(loc='upper left')
 
@@ -236,29 +256,36 @@ class Calibration(DT5550):
 
         plt.legend(loc='upper left')
 
-    def write_calibration(self):
+    def write_calibration(self, **kwargs):
         """
         Write calibrated configuration file
         """
 
+        calibration_type = kwargs.pop('calibration_type', None)
+
+        print('write_calibration:: type =',calibration_type)
         for idet in range(N_DETECTOR):
-            # time offsets
-            toff = self.config['detector_settings'][idet]['TOFF']
-            self.config['detector_settings'][idet]['TOFF'] = toff + self.time_offset[idet]
-            # energy calibration
-            gcor = 1.0
-            if "GCOR" in self.config['detector_settings'][idet].keys():
-                gcor = self.config['detector_settings'][idet]['GCOR']
-            self.config['detector_settings'][idet]['GCOR'] = self.gain_correction[idet]*gcor
-            # average pulse ratio
-            self.config['detector_settings'][idet]['RMEAN'] = self.pulse_ratio_mean[idet]
+            if calibration_type == 'time_offset':
+                # time offsets
+                toff = self.config['detector_settings'][idet]['TOFF']
+                self.config['detector_settings'][idet]['TOFF'] = toff + self.time_offset[idet]
 
-        config_file_cal = self.config_file
-        print('write_calibration:: calibration constants to ', config_file_cal)
+            if calibration_type == 'gain':
+                # energy calibration
+                gcor = 1.0
+                if "GCOR" in self.config['detector_settings'][idet].keys():
+                    gcor = self.config['detector_settings'][idet]['GCOR']
+                self.config['detector_settings'][idet]['GCOR'] = self.gain_correction[idet]*gcor
 
-        # here the actual write is done....
+            if calibration_type == 'ratio':
+                # average pulse ratio
+                self.config['detector_settings'][idet]['RMEAN'] = self.pulse_ratio_mean[idet]
+                self.config['detector_settings'][idet]['RSIGMA'] = self.pulse_ratio_sigma[idet]
+
+
+        print('write_calibration:: calibration constants to ', self.config_file)
+        # here the actual write is done.... (from baseclass DT5550)
         self.write_config_file()
-
 
     def calculate_gains(self, **kwargs):
         """
@@ -296,7 +323,7 @@ class Calibration(DT5550):
             self.gain_correction[idet] = self.energy_calibration_point / self.gain_fit[idet][0]
 
         if write_config:
-            self.write_calibration()
+            self.write_calibration(calibration_type='gain')
 
         if plot_it:
             self.plot_gain_calibration()
