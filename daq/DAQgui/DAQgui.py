@@ -123,6 +123,7 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
                 self.logWindow.append(prompt + line)
                 self.logcounter = self.logcounter + 1
 
+
     def runStop(self):
         """
         stop a run
