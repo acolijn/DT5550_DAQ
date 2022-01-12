@@ -123,7 +123,7 @@ class Calibration(DT5550):
             mean = vals.mean()
             fit = self.gauss_fit(vals, p0=(mean, 1, 10),  range=(mean - 100, mean + 100),
                                  bins=int(200/self.ratio_binwidth))
-            print(idet,' <R> = ',fit[0], ' A = ', fit[1], ' sig = ', fit[2])
+            print(idet, ' <R> = ', fit[0], ' A = ', fit[1], ' sig = ', fit[2])
             self.ratio_fit[idet] = fit
             self.pulse_ratio_mean[idet] = fit[0]
             self.pulse_ratio_sigma[idet] = abs(fit[2])

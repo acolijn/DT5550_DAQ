@@ -169,6 +169,7 @@ class DT5550:
             self.ph[idet] = 0
             self.t[idet] = 0
             self.tc[idet] = 0
+            self.R[idet] = 0
             # only fill if there is valid data on this detector
             if ival:
                 # decode time
@@ -192,7 +193,7 @@ class DT5550:
                 if self.Q[idet] > 0.:
                     self.R[idet] = self.ph[idet] * gain / self.Q[idet]
 
-                self.Q[idet] = self.Q[idet]*gcor*ival
+                self.Q[idet] = self.Q[idet]*gcor
 
                 #  make the timewalk correction
                 self.t[idet] = self.t[idet]-self.toff[idet]
