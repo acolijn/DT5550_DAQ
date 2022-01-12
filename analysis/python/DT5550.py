@@ -5,6 +5,7 @@ import glob
 import os
 import json
 
+import numba as nb
 #
 # variable needed for data decoding
 #
@@ -12,6 +13,16 @@ CHUNK_SIZE = 72  # bytes
 CHANNEL_SIZE = 8  # bytes per channel
 N_DETECTOR = 8  # number of detectors
 
+@nb.njit
+def word_unpack(word, ioff):
+
+    #  decode valid bits
+    i0 = 15 + ioff
+    i1 = 16 + ioff
+    ival0 = (int.from_bytes(word[i0:i1], byteorder='little') & 0x80) >> 7
+    ival1 = (int.from_bytes(word[i0:i1], byteorder='little') & 0x40) >> 6
+
+    return ival0, ival1
 
 class DT5550:
     """
@@ -143,6 +154,10 @@ class DT5550:
             i1 = 16 + ioff
             ival0 = (int.from_bytes(event[i0:i1], byteorder='little') & 0x80) >> 7
             ival1 = (int.from_bytes(event[i0:i1], byteorder='little') & 0x40) >> 6
+
+            #print('A: I0 =',ival0, ival1)
+            #ival0, ival1 = word_unpack(event, ioff)
+            #print('B: I0 =',ival0, ival1)
 
             self.valid0[idet] = ival0  # valid charge measurement
             self.valid1[idet] = ival1  # valid time measurement
