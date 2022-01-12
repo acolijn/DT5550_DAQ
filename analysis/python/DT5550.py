@@ -47,13 +47,15 @@ class DT5550:
         self.fin = ''
 
         if self.filename == 'None':
-            self.filenames = glob.glob(self.indir+'/data_*.raw')
+            #self.filenames = glob.glob(self.indir+'/data_*.raw')
+            self.filenames = sorted(glob.glob(self.indir+'/data_*.raw'), key=os.path.getmtime)
         else:
             self.filenames = glob.glob(self.filename)
             self.indir = os.path.dirname(self.filenames[0])
 
         if self.config_file == 'None':
             self.config_file = glob.glob(self.indir + '/config*.json')[0]
+
 
         print('DT5550:: Data recorded with config: ', self.config_file)
         f = open(self.config_file,'r')

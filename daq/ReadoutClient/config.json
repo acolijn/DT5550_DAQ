@@ -1,6 +1,6 @@
 {
     "version": "Rev.C",
-    "source": "None",
+    "source": "Co60",
     "comment": "just work and no play makes AP a bad boy",
     "registers": {
         "V_max": 1.8,
@@ -10,92 +10,108 @@
         "INTTIME": 200,
         "PREINIT": 15,
         "BLLEN": 8,
-        "BLHOLD": 300,
-        "WINDOW": 350,
+        "BLHOLD": 250,
+        "WINDOW": 250,
         "TMODE": 0,
-        "NMIN": 2,
+        "NMIN": 1,
         "EMIN": 2000
     },
     "detector_settings": [
         {
             "det_id": 0,
-            "GAIN": 1881,
-            "THRS": 50,
+            "GAIN": 1919,
+            "THRS": 100,
             "INVERT": 1,
-            "BASE": 403,
+            "BASE": 408,
             "TOFF": 0,
             "HV": 500,
-            "GCOR": 1.0
+            "GCOR": 1.0,
+            "RMEAN": 1228.5257188170874,
+            "RSIGMA": 14.790841337774614
         },
         {
             "det_id": 1,
-            "GAIN": 2081,
-            "THRS": 50,
+            "GAIN": 2090,
+            "THRS": 100,
             "INVERT": 1,
-            "BASE": 661,
-            "TOFF": 15,
+            "BASE": 669,
+            "TOFF": 5,
             "HV": 460,
-            "GCOR": 1.0
+            "GCOR": 1.0,
+            "RMEAN": 1262.7022576456782,
+            "RSIGMA": 17.204479164288443
         },
         {
             "det_id": 2,
-            "GAIN": 1930,
-            "THRS": 50,
+            "GAIN": 1952,
+            "THRS": 100,
             "INVERT": 1,
-            "BASE": 345,
-            "TOFF": 0,
+            "BASE": 351,
+            "TOFF": -13,
             "HV": 780,
-            "GCOR": 1.0
+            "GCOR": 1.0,
+            "RMEAN": 1264.8941724404026,
+            "RSIGMA": 15.525182599268952
         },
         {
             "det_id": 3,
-            "GAIN": 1756,
-            "THRS": 50,
+            "GAIN": 1771,
+            "THRS": 100,
             "INVERT": 1,
-            "BASE": 367,
-            "TOFF": 9,
+            "BASE": 376,
+            "TOFF": -1,
             "HV": 510,
-            "GCOR": 1.0
+            "GCOR": 1.0,
+            "RMEAN": 1262.837965573876,
+            "RSIGMA": 19.50253531008122
         },
         {
             "det_id": 4,
-            "GAIN": 6243,
-            "THRS": 30,
+            "GAIN": 3347,
+            "THRS": 100,
             "INVERT": 1,
-            "BASE": 370,
-            "TOFF": 3,
-            "HV": 650,
-            "GCOR": 1.0
+            "BASE": 374,
+            "TOFF": -10,
+            "HV": 700,
+            "GCOR": 1.0,
+            "RMEAN": 1243.0363710386691,
+            "RSIGMA": 17.092023834224054
         },
         {
             "det_id": 5,
-            "GAIN": 3219,
-            "THRS": 50,
+            "GAIN": 3228,
+            "THRS": 100,
             "INVERT": 1,
-            "BASE": 594,
-            "TOFF": 12,
+            "BASE": 603,
+            "TOFF": 2,
             "HV": 500,
-            "GCOR": 1.0
+            "GCOR": 1.0,
+            "RMEAN": 1192.5886811204807,
+            "RSIGMA": 17.263635503027285
         },
         {
             "det_id": 6,
-            "GAIN": 1413,
-            "THRS": 50,
+            "GAIN": 1422,
+            "THRS": 100,
             "INVERT": 1,
-            "BASE": 604,
-            "TOFF": 7,
+            "BASE": 611,
+            "TOFF": -5,
             "HV": 590,
-            "GCOR": 1.0
+            "GCOR": 1.0,
+            "RMEAN": 1265.4486135084192,
+            "RSIGMA": 16.10757027607575
         },
         {
             "det_id": 7,
             "GAIN": 1737,
-            "THRS": 50,
+            "THRS": 100,
             "INVERT": 1,
-            "BASE": 717,
-            "TOFF": 10,
+            "BASE": 728,
+            "TOFF": 0,
             "HV": 500,
-            "GCOR": 1.0
+            "GCOR": 1.0,
+            "RMEAN": 1263.0606965797353,
+            "RSIGMA": 16.9881739264935
         }
     ],
     "waveform_settings": {
@@ -107,18 +123,18 @@
         "edge": "Rising"
     },
     "timewalk": {
-        "area_to_peak": 0,
+        "area_to_peak": 2.8281534103157497,
         "chebyshev_order": 8,
         "chebyshev_parameters": [
-            -6674.326704925254,
-            12292.034351764623,
-            -9517.413127024789,
-            6162.704354228745,
-            -3268.070933907073,
-            1376.806212738563,
-            -434.02927397981375,
-            91.62973636712715,
-            -9.317650425028823
+            1076.2007459044632,
+            -2038.6429951100986,
+            1778.1113919392137,
+            -1361.7854558203376,
+            900.0324436294418,
+            -489.4699015960241,
+            208.77755313180813,
+            -62.63254582164793,
+            10.754881739667129
         ]
     }
 }
