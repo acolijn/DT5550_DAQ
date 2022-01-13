@@ -6,6 +6,7 @@ import os
 import json
 
 import numba as nb
+import pandas as pd
 #
 # variable needed for data decoding
 #
@@ -98,6 +99,7 @@ class DT5550:
         self.toff = np.zeros([N_DETECTOR])
         for i in range(N_DETECTOR):
             self.toff[i] = self.config['detector_settings'][i]['TOFF']
+
 
         return
     
@@ -212,6 +214,7 @@ class DT5550:
                 if binname not in self.times[idet]:
                     self.times[idet][binname] = 0
                 self.times[idet][binname] += 1
+
 
         return err
     

@@ -161,7 +161,7 @@ class Calibration(DT5550):
     # Function to be fitted
     def gauss(self, x, x0, y0, sigma):
         p = [x0, y0, sigma]
-        return p[1] * np.exp(-((x - p[0]) / p[2]) ** 2)
+        return p[1] * np.exp(-((x - p[0]) / p[2]) ** 2 / 2)
 
     def gauss_fit(self, data, **kwargs):
         """
