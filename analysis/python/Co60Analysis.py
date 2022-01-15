@@ -96,30 +96,55 @@ class Co60Analysis(DT5550):
         """
         super(Co60Analysis, self).__init__(**kwargs)
         self.runs = kwargs.pop('runs', 'None')
+        self.untagged_runs = kwargs.pop('untagged_runs', 'None')
         self.ee1173_range = kwargs.pop('e1173_range', (1100, 1250))
         self.ee1332_range = kwargs.pop('e1332_range', (1250, 1450))
         self.dt_max = kwargs.pop('dt_max', 10)
 
         self.ee1173 = []
         self.ee1332 = []
+        self.ee1173_untagged = []
+        self.ee1332_untagged = []
 
         for idet in range(N_DETECTOR):
             self.ee1173.append([])
             self.ee1332.append([])
+            self.ee1173_untagged.append([])
+            self.ee1332_untagged.append([])
 
         self.selected = None
         self.n_tag = np.zeros(N_DETECTOR)
         self.dn_tag = np.zeros(N_DETECTOR)
 
+        self.rate_correction = np.ones(N_DETECTOR)
+
+    def add_background(self, **kwargs):
+        """
+        Add the untagged data runs
+        """
+        self.untagged_runs = kwargs.pop('bg', 'None')
+
     def process_data(self, **kwargs):
         """
         Process the data for use in the Co60 analysis
+
+        Input: type = 'correlation' for gamma angular correlation data
+                    = 'untagged' for untagged data analysis
+               max_files = maximum number of files to process (set to low number for debugging)
         """
+
+        run_type = kwargs.pop('type', 'correlation')
         nfmax = kwargs.pop('max_files', 99999)  # maximum number of files to process (handy for debugging)
 
         print("Co60Analysis:: Begin processing data....")
 
         nf = 0
+
+        data_dirs = []
+        if type == 'correlation':
+            data_dirs = self.runs
+        elif type == 'untagged':
+            data_dirs = self.untagged_runs
 
         for run_dir in self.runs:
             #
@@ -146,20 +171,24 @@ class Co60Analysis(DT5550):
                     #
                     #  Process a single event....
                     #
-                    self.process_event()
+                    self.process_event(type=run_type)
 
         #
         # convert the lists to numpy arrays
         #
         self.ee1173 = np.array(self.ee1173, dtype=object)
         self.ee1332 = np.array(self.ee1332, dtype=object)
+        self.ee1173_untagged = np.array(self.ee1173_untagged, dtype=object)
+        self.ee1332_untagged = np.array(self.ee1332_untagged, dtype=object)
 
         print("Co60Analysis:: Processing data - Done....")
 
-    def process_event(self):
+    def process_event(self, **kwargs):
         """
         Process a single event
         """
+        run_type = kwargs.pop('type', 'correlation')
+
         nh = self.valid.sum()
 
         # events with two hits
@@ -177,19 +206,28 @@ class Co60Analysis(DT5550):
                 if abs(delta_t) < self.dt_max:
                     # select the 1173keV if detector0 detects the 1332keV
                     if self.ee1332_range[0] < self.Q[id0] < self.ee1332_range[1]:
-                        self.ee1173[id1].append(self.Q[id1])
-                        self.ee1173[id0].append(self.Q[id0])
+                        if run_type == 'correlation':
+                            self.ee1173[id1].append(self.Q[id1])
+                            self.ee1173[id0].append(self.Q[id0])
+                        elif run_type == "untagged":
+                            self.ee1173_untagged[id1].append(self.Q[id1])
+                            self.ee1173_untagged[id0].append(self.Q[id0])
 
                     # .... and the other way round
                     if self.ee1173_range[0] < self.Q[id0] < self.ee1173_range[1]:
-                        self.ee1332[id1].append(self.Q[id1])
-                        self.ee1332[id0].append(self.Q[id0])
+                        if run_type == 'correlation':
+                            self.ee1332[id1].append(self.Q[id1])
+                            self.ee1332[id0].append(self.Q[id0])
+                        elif run_type == "untagged":
+                            self.ee1173_untaged[id1].append(self.Q[id1])
+                            self.ee1173_untagged[id0].append(self.Q[id0])
 
     def tag_and_count_events(self, **kwargs):
         """
 
         """
         self.selected = kwargs.pop('select', None)
+        self.run_type = kwargs.pop('run_type', 'correlation')
         bins = kwargs.pop('bins',100)
         if self.selected is None:
             print('Co600Analysis::tag_and_count_events no peak selected.... selected= <0->1173keV, 1->1332keV>')
@@ -202,11 +240,18 @@ class Co60Analysis(DT5550):
         if self.selected == 0:
             fit_range = (1100, 1250)
             p0 = [1000,1173, 20]
-            ee_data = self.ee1173
+            if self.run_type == 'correlation':
+                ee_data = self.ee1173
+            elif self.run_type == 'untagged':
+                ee_data = self.ee1173_untagged
         elif self.selected == 1:
             fit_range = (1250, 1500)
             p0 = [1000, 1330, 20]
-            ee_data = self.ee1332
+
+            if self.run_type == 'correlation':
+                ee_data = self.ee1332
+            elif self.run_type == 'untagged':
+                ee_data = self.ee1332_untagged
 
         # define x-variable for plotting teh fittted functions
         bin_width = (plot_range[1] - plot_range[0]) / bins
@@ -227,12 +272,16 @@ class Co60Analysis(DT5550):
                     idet, fit[0], err[0], fit[1], err[1], fit[2], err[2], fwhm)
                 y, _, _ = plt.hist(data, bins=bins, range=plot_range, histtype='step', color='blue', label=txt)
                 plt.plot(xx, bin_width * gauss(xx, fit[0], fit[1], fit[2]), color='red')
+                print(idet, ' N=', fit[0], ' D=', np.sqrt(fit[0]), ' N count =', len(data))
 
-                self.n_tag[idet] = fit[0]
-                self.dn_tag[idet] = np.sqrt(self.n_tag[idet])
-                data = data[data > fit_range[0]]
-                data = data[data < fit_range[1]]
-                print(idet, ' N=', self.n_tag[idet], ' D=', self.dn_tag[idet], ' N count =', len(data))
+                if self.run_type == 'correlation':
+                    self.n_tag[idet] = fit[0]
+                    self.dn_tag[idet] = np.sqrt(self.n_tag[idet])
+
+                elif self.run_type == 'untagged':
+                    self.n_tag_corr[idet] = fit[0]
+                    self.dn_tag_corr[idet] = np.sqrt(self.n_tag_corr[idet])
+
             if self.selected == 1:
                 plt.legend(loc='upper left')
             else:
@@ -243,6 +292,16 @@ class Co60Analysis(DT5550):
             plt.ylim([0.6, 1.1 * max(y)])
 
         plt.show()
+
+    def calculate_corrections(self):
+        """
+        Calculate rate corrections from the untagged data.... only if untagged data have been analyzed
+        """
+
+        if len(self.n_tag_corr[1]) > 0:
+            n0 = self.n_tag_corr[1]
+            for idet in range(1, N_DETECTOR):
+                self.rate_correction[idet] = self.n_tag_corr[idet] / n0
 
     def correlation_analysis(self):
         """
