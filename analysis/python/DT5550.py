@@ -30,7 +30,6 @@ class DT5550:
     DT5550 class to handle binary data
     """
     def __init__(self, **kwargs):
-        #super(DT5550, self).__init__(**kwargs)
         """
         Initialize.....
 
@@ -40,7 +39,10 @@ class DT5550:
         self.indir = kwargs.pop('indir', 'None')
         self.filename = kwargs.pop('file', 'None')
         self.config_file = kwargs.pop('config', 'None')
-        
+
+        if (self.indir == 'None') and (self.filename == 'None'):
+            print('DT5550:: no data files specified.... re-initialize before use')
+            return
         #
         # if no filename is given we analyze all files in the directory indir
         #
@@ -48,7 +50,6 @@ class DT5550:
         self.fin = ''
 
         if self.filename == 'None':
-            #self.filenames = glob.glob(self.indir+'/data_*.raw')
             self.filenames = sorted(glob.glob(self.indir+'/data_*.raw'), key=os.path.getmtime)
         else:
             self.filenames = glob.glob(self.filename)
@@ -99,7 +100,6 @@ class DT5550:
         self.toff = np.zeros([N_DETECTOR])
         for i in range(N_DETECTOR):
             self.toff[i] = self.config['detector_settings'][i]['TOFF']
-
 
         return
     

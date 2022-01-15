@@ -48,7 +48,7 @@ class Calibration(DT5550):
         Process the data for use either in calibration
         """
 
-        print("Calibration::calculate_time_offsets:: Begin....")
+        print("Calibration:: Begin processing data....")
         # reinitialize the delta_time array
         self.raw_energy = [[] for _ in range(N_DETECTOR)]
         self.delta_time = [[] for _ in range(N_DETECTOR)]
