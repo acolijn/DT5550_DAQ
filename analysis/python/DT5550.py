@@ -84,6 +84,7 @@ class DT5550:
         self.Q = np.zeros(N_DETECTOR)
         self.ph = np.zeros(N_DETECTOR)
         self.R = np.zeros(N_DETECTOR)
+        self.Qraw = np.zeros(N_DETECTOR)
 
         self.valid = np.zeros(N_DETECTOR)
         self.valid0 = np.zeros(N_DETECTOR)
@@ -167,6 +168,14 @@ class DT5550:
             self.valid1[idet] = ival1  # valid time measurement
             ival = (ival0 & ival1)
             self.valid[idet] = ival
+
+            i0 = 12 + ioff
+            i1 = 14 + ioff
+            gcor = 1.0
+            if self.found_gain_correction:
+                gcor = self.config['detector_settings'][idet]['GCOR']
+            self.Qraw[idet] = int.from_bytes(event[i0:i1], byteorder='little')
+            self.Qraw[idet] = self.Qraw[idet] * gcor
 
             # reset the measured values
             self.Q[idet] = 0

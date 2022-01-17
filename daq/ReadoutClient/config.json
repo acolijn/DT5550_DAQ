@@ -13,8 +13,8 @@
         "BLHOLD": 250,
         "WINDOW": 250,
         "TMODE": 0,
-        "NMIN": 2,
-        "EMIN": 2000
+        "NMIN": 1,
+        "EMIN": 1000
     },
     "detector_settings": [
         {
