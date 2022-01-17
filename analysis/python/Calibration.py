@@ -70,7 +70,17 @@ class Calibration(DT5550):
                 #
                 for idet in range(N_DETECTOR):
                     if self.valid[idet]:
-                        self.raw_energy[idet].append(self.Q[idet])
+                        R = self.R[idet]
+
+                        rmean = 0
+                        rsig = 10000
+                        if 'RMEAN' in self.config['detector_settings'][idet].keys():
+                            rmean = self.config['detector_settings'][idet]['RMEAN']
+                            rsig = self.config['detector_settings'][idet]['RSIGMA']
+
+                        if abs(R-rmean) < 3*rsig:
+                            self.raw_energy[idet].append(self.Q[idet])
+
                         self.pulse_ratio[idet].append(self.R[idet])
 
                 #
@@ -190,6 +200,7 @@ class Calibration(DT5550):
         plt.figure(figsize=(10, 15))
 
         plot_range = kwargs.pop('range', (1000, 2000))
+        yscale = kwargs.pop('yscale', 'linear')
         bins = int((plot_range[1] - plot_range[0]) / self.ratio_binwidth)
 
         for idet in range(N_DETECTOR):
@@ -197,11 +208,13 @@ class Calibration(DT5550):
             txt = 'CH{:1d} \n$<R>$ = {:3.1f} \n$\sigma$ = {:3.1f}'.format(idet,
                                                                           self.pulse_ratio_mean[idet],
                                                                           self.pulse_ratio_sigma[idet])
-            plt.hist(self.pulse_ratio[idet], bins=bins, range=plot_range, label=txt, histtype='step', color='blue')
+            y,_,_= plt.hist(self.pulse_ratio[idet], bins=bins, range=plot_range, label=txt, histtype='step', color='blue')
             x_fine = np.linspace(plot_range[0], plot_range[1], 500)
             f = self.ratio_fit[idet]
             plt.plot(x_fine, self.gauss(x_fine, f[0], f[1], f[2]), color='red', linewidth=1)
-
+            plt.yscale(yscale)
+            if yscale == 'log':
+                plt.ylim([0.1, 2*max(y)])
             txt = 'R_{:1d}'.format(idet)
             plt.xlabel(txt)
             plt.legend(loc='upper left')
