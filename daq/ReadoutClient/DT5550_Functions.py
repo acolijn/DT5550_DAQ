@@ -68,7 +68,7 @@ def __abstracted_mem_read(count, address, timeout_ms, handle):
 
 
 def __abstracted_fifo_read(count, address, address_status, blocking, timeout_ms, handle):
-    data = (c_uint * (2 * count))()
+    data = (c_uint * (1 * count))()
     read_data = c_uint(0)
     valid_data = c_uint(0)
     err = mydll.NI_USB3_ReadData(byref(data), count, address, 0, timeout_ms, byref(handle), byref(read_data), byref(valid_data))
@@ -81,7 +81,7 @@ def __abstracted_fifo_write(data, count, address, timeout_ms, handle):
 
 def __abstracted_fifo_read(count, address, timeout_ms, handle):
     # data = (c_uint * (2 * count))()
-    data = (c_uint * (2 * count))()
+    data = (c_uint * (1 * count))()
     read_data = (c_int * 1)()
     valid_data = (c_int * 1)()
     err = mydll.NI_USB3_ReadData(byref(data), count, address, 1, timeout_ms, byref(handle), byref(read_data), byref(valid_data))
@@ -342,7 +342,9 @@ def CPACK_CP_0_GET_AVAILABLE_DATA(handle):
 
 def CPACK_CP_0_GET_DATA(n_packet, timeout_ms, handle):
     n_line = 16
-    data_length = n_packet * (3 + n_line)
+    # data_length = n_packet * (3 + n_line)
+    data_length = n_packet * (2 + n_line)
+
     [err, data, read_data, valid_data] = __abstracted_fifo_read(data_length, RegisterFile.SCI_REG_CP_0_FIFOADDRESS, timeout_ms, handle)
     return err, data, read_data, valid_data
 

@@ -260,7 +260,7 @@ class DT5550_io:
 
         :return:
         """
-        N_Packet = 1000
+        N_Packet = 100
         Timeout_ms = 1000
         N_Read_Events = 0
 
@@ -295,9 +295,13 @@ class DT5550_io:
                     #  3. increase the event count
                     #
                     frame_length = len(Frame_Data)
-                    index = 0
+                    #print('LEN = ', len(Frame_Data))
 
+                    index = 0
+                    #print('startit......')
                     while True:
+                        #print(index,  ' d000=', hex(Frame_Data[index]))
+
                         if (Frame_Data[index] == 0xffffffff):
                             # found event
                             ##print('found event at index =',index)
@@ -305,6 +309,8 @@ class DT5550_io:
                                 if j + index >= frame_length:
                                     break
                                 # write data to output file
+                                #print(index,j,' d=',hex(Frame_Data[j + index]))
+
                                 BinaryDataFile.write(Frame_Data[j + index].to_bytes(4, byteorder='little'))
 
                             index = index + EVENT_LENGTH

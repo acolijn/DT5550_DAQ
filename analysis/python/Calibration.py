@@ -333,7 +333,10 @@ class Calibration(DT5550):
             nbin = int(2*de/self.gain_binwidth)
             self.gain_fit[idet] = self.gauss_fit(self.raw_energy[idet], p0=fit_est, bins=nbin,
                                                  range=(fit_est[0]-de, fit_est[0]+de))
-            self.gain_correction[idet] = self.energy_calibration_point / self.gain_fit[idet][0]
+            if self.gain_fit[idet][0] != 0:
+                self.gain_correction[idet] = self.energy_calibration_point / self.gain_fit[idet][0]
+            else:
+                self.gain_correction[idet] = 1.
 
         if write_config:
             self.write_calibration(calibration_type='gain')

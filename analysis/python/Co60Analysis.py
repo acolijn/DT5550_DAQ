@@ -194,7 +194,7 @@ class Co60Analysis(DT5550):
         # events with two hits
         if nh == 2:
             id_sel = []
-            for idet in range(8):
+            for idet in range(N_DETECTOR):
                 if self.valid[idet]:
                     id_sel.append(idet)
 
@@ -272,7 +272,9 @@ class Co60Analysis(DT5550):
                     idet, fit[0], err[0], fit[1], err[1], fit[2], err[2], fwhm)
                 y, _, _ = plt.hist(data, bins=bins, range=plot_range, histtype='step', color='blue', label=txt)
                 plt.plot(xx, bin_width * gauss(xx, fit[0], fit[1], fit[2]), color='red')
-                print(idet, ' N=', fit[0], ' D=', np.sqrt(fit[0]), ' N count =', len(data))
+                data_cnt = data[data>fit_range[0]]
+                data_cnt = data_cnt[data_cnt<fit_range[1]]
+                print(idet, ' N=', fit[0], ' D=', np.sqrt(fit[0]), ' N count =', len(data_cnt))
 
                 if self.run_type == 'correlation':
                     self.n_tag[idet] = fit[0]
@@ -311,13 +313,19 @@ class Co60Analysis(DT5550):
         # make an array with cos(theta) values
         # NOTE: the phi locations of teh detectors are hard coded... this could/should change in the future if we
         #       study different geometries.....
+        cost = []
+        x = np.arange(2, 8, 1)
+        for i in x:
+            if i != 2:
+                theta = (7 - i) * (np.pi / 12) + np.pi / 2
+            else:
+                theta = (7 - i) * (np.pi / 12) + np.pi / 2 + (np.pi / 12)
 
-        x = np.arange(1, 8, 1)
-        theta = (7 - x) * (np.pi / 12) + np.pi / 2
-        cost = abs(np.cos(theta))
+            print(i,' theta =', theta,' cost =', abs(np.cos(theta)))
+            cost.append(abs(np.cos(theta)))
 
-        data = self.n_tag[1:8]
-        yerr = self.dn_tag[1:8]
+        data = self.n_tag[2:8]
+        yerr = self.dn_tag[2:8]
         #
         # fit the data
         #
