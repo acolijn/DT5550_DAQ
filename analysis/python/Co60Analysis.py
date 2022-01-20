@@ -8,6 +8,8 @@ from scipy.optimize import curve_fit
 from scipy.signal import find_peaks
 import heapq
 
+import pandas as pd
+
 N_DETECTOR = 8
 
 def legendre_polynomial(x, A, c2, c4):
@@ -98,25 +100,17 @@ class Co60Analysis(DT5550):
         self.runs = kwargs.pop('runs', 'None')
         self.untagged_runs = kwargs.pop('untagged_runs', 'None')
         self.ee1173_range = kwargs.pop('e1173_range', (1100, 1250))
-        self.ee1332_range = kwargs.pop('e1332_range', (1250, 1450))
+        self.ee1332_range = kwargs.pop('e1332_range', (1250, 1500))
         self.dt_max = kwargs.pop('dt_max', 10)
 
-        self.ee1173 = []
-        self.ee1332 = []
-        self.ee1173_untagged = []
-        self.ee1332_untagged = []
-
-        for idet in range(N_DETECTOR):
-            self.ee1173.append([])
-            self.ee1332.append([])
-            self.ee1173_untagged.append([])
-            self.ee1332_untagged.append([])
-
-        self.selected = None
-        self.n_tag = np.zeros(N_DETECTOR)
-        self.dn_tag = np.zeros(N_DETECTOR)
-
         self.rate_correction = np.ones(N_DETECTOR)
+
+        self.data_sel = []
+        self.df = pd.DataFrame()
+
+        self.cost = []
+        self.ntag = []
+        self.dntag = []
 
     def add_background(self, **kwargs):
         """
@@ -141,12 +135,12 @@ class Co60Analysis(DT5550):
         nf = 0
 
         data_dirs = []
-        if type == 'correlation':
+        if run_type == 'correlation':
             data_dirs = self.runs
-        elif type == 'untagged':
+        elif run_type == 'untagged':
             data_dirs = self.untagged_runs
 
-        for run_dir in self.runs:
+        for run_dir in data_dirs:
             #
             # initialie the DT5550 data structure
             #
@@ -174,12 +168,9 @@ class Co60Analysis(DT5550):
                     self.process_event(type=run_type)
 
         #
-        # convert the lists to numpy arrays
+        # generrate a pandas dataframe from the selected data
         #
-        self.ee1173 = np.array(self.ee1173, dtype=object)
-        self.ee1332 = np.array(self.ee1332, dtype=object)
-        self.ee1173_untagged = np.array(self.ee1173_untagged, dtype=object)
-        self.ee1332_untagged = np.array(self.ee1332_untagged, dtype=object)
+        self.df = pd.DataFrame(self.data_sel)
 
         print("Co60Analysis:: Processing data - Done....")
 
@@ -191,141 +182,173 @@ class Co60Analysis(DT5550):
 
         nh = self.valid.sum()
 
-        # events with two hits
         if nh == 2:
-            id_sel = []
-            for idet in range(N_DETECTOR):
-                if self.valid[idet]:
-                    id_sel.append(idet)
-
+            id_sel = np.where(self.valid == 1)[0]
             id0 = id_sel[0]
             id1 = id_sel[1]
-
+            # calculate the time difference between hits
             delta_t = self.tc[id1] - self.tc[id0]
-            if id0 == 0:
-                if abs(delta_t) < self.dt_max:
-                    # select the 1173keV if detector0 detects the 1332keV
-                    if self.ee1332_range[0] < self.Q[id0] < self.ee1332_range[1]:
-                        if run_type == 'correlation':
-                            self.ee1173[id1].append(self.Q[id1])
-                            self.ee1173[id0].append(self.Q[id0])
-                        elif run_type == "untagged":
-                            self.ee1173_untagged[id1].append(self.Q[id1])
-                            self.ee1173_untagged[id0].append(self.Q[id0])
+            record = {'id0': id0, 'id1': id1, 'E0': self.Q[id0], 'E1': self.Q[id1], 'R0': self.R[id0], 'R1': self.R[id1], 'dt': delta_t}
+            self.data_sel.append(record)
 
-                    # .... and the other way round
-                    if self.ee1173_range[0] < self.Q[id0] < self.ee1173_range[1]:
-                        if run_type == 'correlation':
-                            self.ee1332[id1].append(self.Q[id1])
-                            self.ee1332[id0].append(self.Q[id0])
-                        elif run_type == "untagged":
-                            self.ee1173_untaged[id1].append(self.Q[id1])
-                            self.ee1173_untagged[id0].append(self.Q[id0])
-
-    def tag_and_count_events(self, **kwargs):
+    def tag_and_count(self, **kwargs):
+        """
+        Tag and count events.....
         """
 
-        """
-        self.selected = kwargs.pop('select', None)
-        self.run_type = kwargs.pop('run_type', 'correlation')
-        bins = kwargs.pop('bins',100)
-        if self.selected is None:
-            print('Co600Analysis::tag_and_count_events no peak selected.... selected= <0->1173keV, 1->1332keV>')
+        tagged_peak = kwargs.pop('tagged_peak', '1173keV')  # or 1332keV
+        id_tag = kwargs.pop('idet_tag', -1)
+        id_sel = kwargs.pop('idet_sel', -1)
+        bin_width = kwargs.pop('bin_width', 10)
+
+        if (id_tag == -1) or (id_sel == -1):
+            print('Co60Analysis::tag_and_count_events ERROR idet_tag =',id_tag,' idet_sel =',id_sel)
+            print('Co60Analysis::tag_and_count_events       should both be [0..7])')
             return
 
-        plot_range = (1000, 1500)
         fit_range = (0, 0)
-        ee_data = []
+        tag_range = (0, 0)
+        p0 = np.zeros(3)
 
-        if self.selected == 0:
-            fit_range = (1100, 1250)
-            p0 = [1000,1173, 20]
-            if self.run_type == 'correlation':
-                ee_data = self.ee1173
-            elif self.run_type == 'untagged':
-                ee_data = self.ee1173_untagged
-        elif self.selected == 1:
-            fit_range = (1250, 1500)
-            p0 = [1000, 1330, 20]
+        fit = np.zeros(3)
+        err = np.zeros(3)
 
-            if self.run_type == 'correlation':
-                ee_data = self.ee1332
-            elif self.run_type == 'untagged':
-                ee_data = self.ee1332_untagged
+        if tagged_peak == '1173keV':
+            tag_range = self.ee1173_range
+            fit_range = self.ee1332_range
+            p0 = [100, 1173, 20]
+        elif tagged_peak == '1332keV':
+            tag_range = self.ee1332_range
+            fit_range = self.ee1173_range
+            p0 = [100, 1330, 20]
 
-        # define x-variable for plotting teh fittted functions
+        #
+        # get the processed data.....
+        #
+        df = self.df
+        #
+        # selection criteria
+        #
+        select0 = (df['id0'] == id_tag) & (df['E0'] > tag_range[0]) & (df['E0'] < tag_range[1]) & (abs(df['dt']) < self.dt_max)
+        select1 = (df['id1'] == id_tag) & (df['E1'] > tag_range[0]) & (df['E1'] < tag_range[1]) & (abs(df['dt']) < self.dt_max)
+
+        #
+        # get the data from the selected detector with a tag in id_tag
+        #
+        if id_sel == id_tag:
+            data = np.array(df['E0'][select0])
+            data = np.append(data, df['E1'][select1])
+        else:
+            # events tagged by detector id1 and seen in id0=idet
+            data = np.array(df['E0'][select1 & (df['id0'] == id_sel)])
+            # events tagged by detector id0 and seen in id1=idet
+            data = np.append(data, np.array(df['E1'][select0 & (df['id1'] == id_sel)]))
+            #
+            # fit a Gaussian to the data from the selected detector
+            #
+            fit, err = gauss_fit(data, range=fit_range, bins=int((fit_range[1] - fit_range[0]) / bin_width), p0=p0)
+
+        return data, fit, err
+
+    def correlation_analysis(self, **kwargs):
+        """
+        analyze the gamma-gamma correlations for all detector combinations
+        """
+
+        tagged_peak = kwargs.pop('tagged_peak', '1173keV')
+        plot_range = kwargs.pop('range', (0, 2000))
+        bins = kwargs.pop('bins', 100)
+
+        # define x-variable for plotting the fittted functions
         bin_width = (plot_range[1] - plot_range[0]) / bins
         xx = np.linspace(plot_range[0], plot_range[1], 1000)
 
-        plt.figure(figsize=(12,18))
-        for idet in range(N_DETECTOR):
-            plt.subplot(4, 2, 1 + idet)
-            data = np.array(ee_data[idet])
+        plt.figure(figsize=(18, 18))
 
-            if idet == 0:
+        self.cost = []
+        self.ntag = []
+        self.dntag = []
+
+        for id_tag in range(N_DETECTOR-1):
+            for idet in range(N_DETECTOR-1):
+                plt.subplot(7, 7, 1 + idet + id_tag*7)
+                #
+                # measure the correlation between id_tag and idet
+                #
+                data, fit, err = self.tag_and_count(tagged_peak=tagged_peak, bin_width=bin_width, idet_tag=id_tag, idet_sel=idet)
+
+                if idet == id_tag: # just for display the tagged events....
+                    txt = 'CH{:1d}'.format(idet)
+                    y, _, _ = plt.hist(data, bins=bins, range=plot_range, histtype='step', color='blue', label=txt)
+                else:
+                    fwhm = 2.35 * fit[2] / fit[1] * 100
+                    txt = 'CH{:1d}-{:1d}\nN={:5.0f} $\pm$ {:2.0f} \n$\mu$={:5.1f} $\pm$ {:3.1f} keV \n$\sigma$={:5.1f} $\pm$ {:3.1f} keV\nFWHM/E = {:3.1f}%'.format(
+                        idet, id_tag, fit[0], err[0], fit[1], err[1], fit[2], err[2], fwhm)
+                    y, _, _ = plt.hist(data, bins=bins, range=plot_range, histtype='step', color='blue', label=txt)
+                    plt.plot(xx, bin_width * gauss(xx, fit[0], fit[1], fit[2]), color='red')
+
+                    ##print(idet, ' N=', fit[0], ' D=', np.sqrt(fit[0]), ' N count =', len(data))
+                    theta0 = self.config['detector_settings'][id_tag]['THETA']
+                    theta1 = self.config['detector_settings'][idet]['THETA']
+
+                    self.cost.append(np.cos(theta0 - theta1))
+                    self.ntag.append(fit[0]) # / self.rate_correction[idet] / self.rate_correction[id_tag])
+                    self.dntag.append(np.sqrt(fit[0])) # / self.rate_correction[idet] / self.rate_correction[id_tag] )
+
+                plt.legend(loc='upper right')
+                plt.xlabel('E (keV)')
+                plt.yscale('linear')
+                plt.ylim([0.6, 1.1 * max(y)])
+
+        plt.show()
+
+    def calculate_corrections(self, **kwargs):
+        """
+        Calculate rate corrections from the untagged data....
+        """
+
+        tagged_peak = kwargs.pop('tagged_peak', '1173keV')  # or 1332keV
+        id_tag = kwargs.pop('idet_tag', 7)  # default tagging detector
+        bins = kwargs.pop('bins', 100)
+        plot_range = kwargs.pop('range', (0,2000))
+
+        # define x-variable for plotting the fittted functions
+        bin_width = (plot_range[1] - plot_range[0]) / bins
+        xx = np.linspace(plot_range[0], plot_range[1], 1000)
+
+        plt.figure(figsize=(20, 10))
+        for idet in range(N_DETECTOR):
+            plt.subplot(2, 4, 1 + idet)
+            data, fit, err = self.tag_and_count(tagged_peak=tagged_peak, bin_width=bin_width, idet_tag=id_tag,
+                                                idet_sel=idet)
+            if idet == id_tag:
                 txt = 'CH{:1d}'.format(idet)
                 y, _, _ = plt.hist(data, bins=bins, range=plot_range, histtype='step', color='blue', label=txt)
             else:
-                fit, err = gauss_fit(data, range=fit_range, bins=int((fit_range[1] - fit_range[0]) / bin_width), p0=p0)
                 fwhm = 2.35 * fit[2] / fit[1] * 100
-                txt = 'CH{:1d}\nN={:5.0f} $\pm$ {:2.0f} \n$\mu$={:5.1f} $\pm$ {:3.1f} keV \n$\sigma$={:5.1f} $\pm$ {:3.1f} keV\nFWHM/E = {:3.1f}%'.format(
-                    idet, fit[0], err[0], fit[1], err[1], fit[2], err[2], fwhm)
+                txt = 'CH{:1d}-{:1d}\nN={:5.0f} $\pm$ {:2.0f} \n$\mu$={:5.1f} $\pm$ {:3.1f} keV \n$\sigma$={:5.1f} $\pm$ {:3.1f} keV\nFWHM/E = {:3.1f}%'.format(
+                    idet, id_tag, fit[0], err[0], fit[1], err[1], fit[2], err[2], fwhm)
                 y, _, _ = plt.hist(data, bins=bins, range=plot_range, histtype='step', color='blue', label=txt)
                 plt.plot(xx, bin_width * gauss(xx, fit[0], fit[1], fit[2]), color='red')
-                data_cnt = data[data>fit_range[0]]
-                data_cnt = data_cnt[data_cnt<fit_range[1]]
-                print(idet, ' N=', fit[0], ' D=', np.sqrt(fit[0]), ' N count =', len(data_cnt))
 
-                if self.run_type == 'correlation':
-                    self.n_tag[idet] = fit[0]
-                    self.dn_tag[idet] = np.sqrt(self.n_tag[idet])
+                self.rate_correction[idet] = fit[0]
 
-                elif self.run_type == 'untagged':
-                    self.n_tag_corr[idet] = fit[0]
-                    self.dn_tag_corr[idet] = np.sqrt(self.n_tag_corr[idet])
-
-            if self.selected == 1:
-                plt.legend(loc='upper left')
-            else:
-                plt.legend(loc='upper right')
-
+            plt.legend(loc='upper right')
             plt.xlabel('E (keV)')
             plt.yscale('linear')
             plt.ylim([0.6, 1.1 * max(y)])
 
-        plt.show()
+        #cmax = max(self.rate_correction)
+        #self.rate_correction = self.rate_correction/cmax
 
-    def calculate_corrections(self):
-        """
-        Calculate rate corrections from the untagged data.... only if untagged data have been analyzed
-        """
-
-        if len(self.n_tag_corr[1]) > 0:
-            n0 = self.n_tag_corr[1]
-            for idet in range(1, N_DETECTOR):
-                self.rate_correction[idet] = self.n_tag_corr[idet] / n0
-
-    def correlation_analysis(self):
+    def correlation_fit(self):
         """
         Do the correlation analysis... and plot
         """
+        cost = np.array(self.cost)
+        data = np.array(self.ntag)
+        yerr = np.array(self.dntag)
 
-        # make an array with cos(theta) values
-        # NOTE: the phi locations of teh detectors are hard coded... this could/should change in the future if we
-        #       study different geometries.....
-        cost = []
-        x = np.arange(2, 8, 1)
-        for i in x:
-            if i != 2:
-                theta = (7 - i) * (np.pi / 12) + np.pi / 2
-            else:
-                theta = (7 - i) * (np.pi / 12) + np.pi / 2 + (np.pi / 12)
-
-            print(i,' theta =', theta,' cost =', abs(np.cos(theta)))
-            cost.append(abs(np.cos(theta)))
-
-        data = self.n_tag[2:8]
-        yerr = self.dn_tag[2:8]
         #
         # fit the data
         #
@@ -339,7 +362,7 @@ class Co60Analysis(DT5550):
         #
         # plot the fit to the data
         #
-        xx = np.linspace(0, 1, 500)
+        xx = np.linspace(-1, 1, 500)
         plt.plot(xx, legendre_polynomial(xx, fit[0], fit[1], fit[2]), '-', color='red', label='fit')
         plt.plot(xx, legendre_polynomial(xx, fit[0], 0.1005, 0.0094), '--', color='green', label='theory')
         plt.xlabel('$\cos \\theta$')

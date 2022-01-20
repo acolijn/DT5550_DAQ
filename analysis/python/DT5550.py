@@ -14,14 +14,23 @@ CHUNK_SIZE = 72  # bytes
 CHANNEL_SIZE = 8  # bytes per channel
 N_DETECTOR = 8  # number of detectors
 
-@nb.njit
+@nb.jit
 def word_unpack(word, ioff):
 
     #  decode valid bits
     i0 = 15 + ioff
-    i1 = 16 + ioff
-    ival0 = (int.from_bytes(word[i0:i1], byteorder='little') & 0x80) >> 7
-    ival1 = (int.from_bytes(word[i0:i1], byteorder='little') & 0x40) >> 6
+    #i1 = 16 + ioff
+    #ival0 = (int.from_bytes(word[i0:i1], byteorder='little') & 0x80) >> 7
+    #ival1 = (int.from_bytes(word[i0:i1], byteorder='little') & 0x40) >> 6
+
+    value = np.frombuffer(word, dtype=np.uint8, offset=i0)[0]
+
+    ival0 = ( value & 0x80) >> 7
+    ival1 = ( value & 0x40) >> 6
+
+    #print('val0', ival0, ival_tmp0)
+    #print('val1', ival1, ival_tmp1)
+
 
     return ival0, ival1
 
