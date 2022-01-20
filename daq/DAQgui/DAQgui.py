@@ -23,6 +23,15 @@ if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
 
+
+def deg2rad(deg):
+    return deg*0.01745329
+
+
+def rad2deg(rad):
+    return rad*57.2957795
+
+
 class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
     """
     GUI for DAQ
@@ -177,7 +186,11 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
             for label in self.hlabels:
                 icol = self.hlabels.index(label)
                 value = self.detectorSettings.item(idet, icol).text()
-                self.config_new['detector_settings'][idet][label] = int(float(value))
+                if label == "THETA":
+                    self.config_new['detector_settings'][idet][label] = deg2rad(float(value))
+                else:
+                    self.config_new['detector_settings'][idet][label] = int(float(value))
+
 
     def loadConfiguration(self):
         """
@@ -250,7 +263,7 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         """
         table = self.detectorSettings
         table.setRowCount(N_DETECTOR)
-        self.hlabels = ("GAIN", "THRS", "INVERT", "BASE", "TOFF", "HV")
+        self.hlabels = ("GAIN", "THRS", "INVERT", "BASE", "TOFF", "HV", "THETA")
 
         table.setColumnCount(len(self.hlabels))
 
@@ -281,8 +294,16 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         for idet in range(N_DETECTOR):
             for label in self.hlabels:
                 icol = self.hlabels.index(label)
-                val = self.config['detector_settings'][idet][label]
-                table.setItem(idet, icol, QTableWidgetItem(str(int(val))))
+
+                if label in self.config['detector_settings'][idet].keys():
+                    val = self.config['detector_settings'][idet][label]
+                else:
+                    val = -1.0
+
+                if label == 'THETA':
+                    table.setItem(idet, icol, QTableWidgetItem(str(rad2deg(val))))
+                else:
+                    table.setItem(idet, icol, QTableWidgetItem(str(val)))
 
 
 def main():
