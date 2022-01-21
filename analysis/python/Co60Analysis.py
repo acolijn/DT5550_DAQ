@@ -366,9 +366,6 @@ class Co60Analysis(DT5550):
             if cost[i] < 0:
                 cost[i] = cost[i] * -1
 
-        average_data = []
-        for i in range(len(cost)):
-            average_data.append([])
         #
         # fit the data
         #
@@ -377,7 +374,8 @@ class Co60Analysis(DT5550):
         # plot the data
         #
         txt = '$c_2$ = {:4.3f} $\pm$ {:4.3f} \n$c_4$ = {:4.3f} $\pm$ {:4.3f}'.format(fit[1], err[1], fit[2], err[2])
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(10, 12))
+        plt.subplot(2, 1, 1)
         h = plt.errorbar(cost, data, yerr=yerr, fmt='o', color='blue', label=txt)
 
         for i in range(len(data)):
@@ -391,5 +389,43 @@ class Co60Analysis(DT5550):
         plt.xlabel('$\cos \\theta$')
         plt.legend()
         plt.title("$\gamma$ correlation in $^{60}$Co decay")
+
+        average_data = []
+        check = []
+        yerr_list = []
+        for i in range(len(cost)):
+            sum = data[i]
+            count = 1
+            positive_check = 0
+
+            for k in check:
+                if abs(cost[i]) > (k - 0.001) and abs(cost[i]) < (k + 0.001):
+                    positive_check = positive_check + 1
+            if positive_check == 0:
+                for j in range(len(cost)):
+                    if i != j:
+                        if abs(cost[i]) > (abs(cost[j]) - 0.001) and abs(cost[i]) < (abs(cost[j]) + 0.001) :
+                            sum = sum + data[j]
+                            count = count + 1
+                            if abs(cost[i]) not in check:
+                                check.append(abs(cost[i]))
+                average_data.append(sum/count)
+                yerr_list.append(np.sqrt(sum)/count)
+
+        print(yerr)
+        print(yerr_list)
+
+        plt.subplot(2, 1, 2)
+        h = plt.errorbar(check, average_data, yerr = yerr_list, fmt='o', color='blue', label=txt)
+
+        #
+        # plot the fit to the data
+        #
+        xx = np.linspace(0, 1, 500)
+        plt.plot(xx, legendre_polynomial(xx, fit[0], fit[1], fit[2]), '-', color='red', label='fit')
+        plt.plot(xx, legendre_polynomial(xx, fit[0], 0.1005, 0.0094), '--', color='green', label='theory')
+        plt.xlabel('$\cos \\theta$')
+        plt.legend()
+        plt.title("$\gamma$ correlation in $^{60}$Co decay with average measurements")
 
         plt.show()
