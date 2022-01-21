@@ -131,7 +131,7 @@ class Calibration(DT5550):
         for idet in range(N_DETECTOR):
             vals = self.pulse_ratio[idet]
             mean = vals.mean()
-            fit = self.gauss_fit(vals, p0=(mean, 1, 10),  range=(mean - 100, mean + 100),
+            fit = self.gauss_fit(vals, p0=(mean, 70000, 10),  range=(mean - 100, mean + 100),
                                  bins=int(200/self.ratio_binwidth))
             print(idet, ' <R> = ', fit[0], ' A = ', fit[1], ' sig = ', fit[2])
             self.ratio_fit[idet] = fit
