@@ -111,6 +111,7 @@ class Co60Analysis(DT5550):
         self.cost = []
         self.ntag = []
         self.dntag = []
+        self.ntag_label = []
 
     def add_background(self, **kwargs):
         """
@@ -168,7 +169,7 @@ class Co60Analysis(DT5550):
                     self.process_event(type=run_type)
 
         #
-        # generrate a pandas dataframe from the selected data
+        # generate a pandas dataframe from the selected data
         #
         self.df = pd.DataFrame(self.data_sel)
 
@@ -247,7 +248,11 @@ class Co60Analysis(DT5550):
             # fit a Gaussian to the data from the selected detector
             #
             fit, err = gauss_fit(data, range=fit_range, bins=int((fit_range[1] - fit_range[0]) / bin_width), p0=p0)
-
+            ##data_sel = data[data>1250]
+            ##data_sel = data_sel[data_sel<1450]
+            ##fit[0] = len(data_sel)
+            ##fit[1] = 1
+            ##fit[2] = 1
         return data, fit, err
 
     def correlation_analysis(self, **kwargs):
@@ -268,6 +273,7 @@ class Co60Analysis(DT5550):
         self.cost = []
         self.ntag = []
         self.dntag = []
+        self.ntag_label = []
 
         for id_tag in range(N_DETECTOR-1):
             for idet in range(N_DETECTOR-1):
@@ -290,15 +296,21 @@ class Co60Analysis(DT5550):
                     ##print(idet, ' N=', fit[0], ' D=', np.sqrt(fit[0]), ' N count =', len(data))
                     theta0 = self.config['detector_settings'][id_tag]['THETA']
                     theta1 = self.config['detector_settings'][idet]['THETA']
-
+                    #print(idet,id_tag)
+                    #print('            fit parameters =', fit)
                     self.cost.append(np.cos(theta0 - theta1))
-                    self.ntag.append(fit[0]) # / self.rate_correction[idet] / self.rate_correction[id_tag])
-                    self.dntag.append(np.sqrt(fit[0])) # / self.rate_correction[idet] / self.rate_correction[id_tag] )
+                    self.ntag.append(abs(fit[0]) / self.rate_correction[idet] / self.rate_correction[id_tag])
+                    self.dntag.append(np.sqrt(abs(fit[0])) / self.rate_correction[idet] / self.rate_correction[id_tag] )
+                    txt = '{:1d}-{:1d}'.format(id_tag, idet)
+                    self.ntag_label.append(txt)
 
                 plt.legend(loc='upper right')
                 plt.xlabel('E (keV)')
                 plt.yscale('linear')
                 plt.ylim([0.6, 1.1 * max(y)])
+        # for i in self.cost:
+        #     print("hoeken", i / np.pi * 180)
+        # print("detectoren",self.ntag_label)
 
         plt.show()
 
@@ -348,7 +360,15 @@ class Co60Analysis(DT5550):
         cost = np.array(self.cost)
         data = np.array(self.ntag)
         yerr = np.array(self.dntag)
+        labels = np.array(self.ntag_label)
 
+        for i in range(len(cost)):
+            if cost[i] < 0:
+                cost[i] = cost[i] * -1
+
+        average_data = []
+        for i in range(len(cost)):
+            average_data.append([])
         #
         # fit the data
         #
@@ -359,10 +379,13 @@ class Co60Analysis(DT5550):
         txt = '$c_2$ = {:4.3f} $\pm$ {:4.3f} \n$c_4$ = {:4.3f} $\pm$ {:4.3f}'.format(fit[1], err[1], fit[2], err[2])
         plt.figure(figsize=(10, 6))
         h = plt.errorbar(cost, data, yerr=yerr, fmt='o', color='blue', label=txt)
+
+        for i in range(len(data)):
+            plt.text(cost[i], data[i], labels[i])
         #
         # plot the fit to the data
         #
-        xx = np.linspace(-1, 1, 500)
+        xx = np.linspace(0, 1, 500)
         plt.plot(xx, legendre_polynomial(xx, fit[0], fit[1], fit[2]), '-', color='red', label='fit')
         plt.plot(xx, legendre_polynomial(xx, fit[0], 0.1005, 0.0094), '--', color='green', label='theory')
         plt.xlabel('$\cos \\theta$')

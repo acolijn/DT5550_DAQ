@@ -260,7 +260,7 @@ class DT5550_io:
 
         :return:
         """
-        N_Packet = 100
+        N_Packet = 1000
         Timeout_ms = 1000
         N_Read_Events = 0
 

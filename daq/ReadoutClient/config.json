@@ -1,6 +1,6 @@
 {
     "version": "Rev.C",
-    "source": "None",
+    "source": "Co60",
     "comment": "just work and no play makes AP a bad boy",
     "registers": {
         "V_max": 1.8,
@@ -36,7 +36,7 @@
             "THRS": 1000,
             "INVERT": 1,
             "BASE": 674,
-            "TOFF": 0,
+            "TOFF": -11,
             "HV": 575,
             "GCOR": 1.0,
             "RMEAN": 1259.4457346825782,
@@ -45,16 +45,16 @@
         },
         {
             "det_id": 2,
-            "GAIN": 493,
+            "GAIN": 494,
             "THRS": 300,
             "INVERT": 1,
             "BASE": 361,
-            "TOFF": -13,
+            "TOFF": -26,
             "HV": 920,
             "GCOR": 1.0,
             "RMEAN": 1270.0117300201466,
             "RSIGMA": 12.568376466909957,
-            "THETA": 0.916297725
+            "THETA": 0.78539805
         },
         {
             "det_id": 3,
@@ -62,25 +62,25 @@
             "THRS": 1000,
             "INVERT": 1,
             "BASE": 384,
-            "TOFF": -4,
+            "TOFF": -17,
             "HV": 645,
             "GCOR": 1.0,
             "RMEAN": 1267.3288719376462,
             "RSIGMA": 14.576765641725293,
-            "THETA": 2.0943948
+            "THETA": 1.0471974
         },
         {
             "det_id": 4,
-            "GAIN": 313,
+            "GAIN": 310,
             "THRS": 500,
             "INVERT": 1,
             "BASE": 386,
-            "TOFF": -14,
+            "TOFF": -27,
             "HV": 905,
             "GCOR": 1.0,
             "RMEAN": 1232.467728742026,
             "RSIGMA": 14.37996507867877,
-            "THETA": 2.35619415
+            "THETA": 2.225294475
         },
         {
             "det_id": 5,
@@ -88,7 +88,7 @@
             "THRS": 750,
             "INVERT": 1,
             "BASE": 606,
-            "TOFF": -3,
+            "TOFF": -17,
             "HV": 680,
             "GCOR": 1.0,
             "RMEAN": 1188.9494176871092,
@@ -101,7 +101,7 @@
             "THRS": 1000,
             "INVERT": 1,
             "BASE": 617,
-            "TOFF": -6,
+            "TOFF": -18,
             "HV": 725,
             "GCOR": 1.0,
             "RMEAN": 1265.12201103366,
@@ -114,12 +114,12 @@
             "THRS": 1000,
             "INVERT": 1,
             "BASE": 729,
-            "TOFF": -3,
+            "TOFF": -15,
             "HV": 615,
             "GCOR": 1.0,
             "RMEAN": 1268.0822403838833,
             "RSIGMA": 13.132137146692376,
-            "THETA": -174.51544671
+            "THETA": -174.51542147324358
         }
     ],
     "waveform_settings": {
