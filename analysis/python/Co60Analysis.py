@@ -102,6 +102,7 @@ class Co60Analysis(DT5550):
         self.ee1173_range = kwargs.pop('e1173_range', (1100, 1250))
         self.ee1332_range = kwargs.pop('e1332_range', (1250, 1500))
         self.dt_max = kwargs.pop('dt_max', 10)
+        self.n_hit = []
 
         self.rate_correction = np.ones(N_DETECTOR)
 
@@ -183,6 +184,8 @@ class Co60Analysis(DT5550):
 
         nh = self.valid.sum()
 
+        self.n_hit.append(nh)
+
         if nh == 2:
             id_sel = np.where(self.valid == 1)[0]
             id0 = id_sel[0]
@@ -191,6 +194,33 @@ class Co60Analysis(DT5550):
             delta_t = self.tc[id1] - self.tc[id0]
             record = {'id0': id0, 'id1': id1, 'E0': self.Q[id0], 'E1': self.Q[id1], 'R0': self.R[id0], 'R1': self.R[id1], 'dt': delta_t}
             self.data_sel.append(record)
+
+        #
+        # if there are three hits: select the two close in time. store only if the third hit is far away in time
+        #
+        if nh == 3:
+            record = {}
+            idx = np.where(self.valid == 1)[0]
+            dt_min = 9999999
+            dt_max = -1
+            for i in range(len(idx)-1):
+                for j in range(i+1, len(idx)):
+                    id0 = idx[i]
+                    id1 = idx[j]
+
+                    dt = self.tc[id0] - self.tc[id1]
+                    if abs(dt) < dt_min:
+                        dt_min = dt
+                        record = {'id0': id0, 'id1': id1, 'E0': self.Q[id0], 'E1': self.Q[id1], 'R0': self.R[id0],
+                                  'R1': self.R[id1], 'dt': dt}
+                    if abs(dt) > dt_max:
+                        dt_max = dt
+
+            if abs(dt_max) > 10:
+                ##print('append it....', record)
+                self.data_sel.append(record)
+
+
 
     def tag_and_count(self, **kwargs):
         """
