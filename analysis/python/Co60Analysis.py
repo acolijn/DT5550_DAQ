@@ -328,11 +328,12 @@ class Co60Analysis(DT5550):
                     theta1 = self.config['detector_settings'][idet]['THETA']
                     #print(idet,id_tag)
                     #print('            fit parameters =', fit)
-                    self.cost.append(np.cos(theta0 - theta1))
-                    self.ntag.append(abs(fit[0]) / self.rate_correction[idet] / self.rate_correction[id_tag])
-                    self.dntag.append(np.sqrt(abs(fit[0])) / self.rate_correction[idet] / self.rate_correction[id_tag] )
-                    txt = '{:1d}-{:1d}'.format(id_tag, idet)
-                    self.ntag_label.append(txt)
+                    if (idet != 4) and (id_tag != 4):
+                        self.cost.append(np.cos(theta0 - theta1))
+                        self.ntag.append(abs(fit[0]) / self.rate_correction[idet] / self.rate_correction[id_tag])
+                        self.dntag.append(np.sqrt(abs(fit[0])) / self.rate_correction[idet] / self.rate_correction[id_tag])
+                        txt = '{:1d}-{:1d}'.format(id_tag, idet)
+                        self.ntag_label.append(txt)
 
                 plt.legend(loc='upper right')
                 plt.xlabel('E (keV)')

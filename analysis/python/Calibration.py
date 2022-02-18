@@ -86,18 +86,25 @@ class Calibration(DT5550):
                 #
                 #  For time offset calibrations:: select events with two valid hits
                 #
-                if self.valid.sum() == 2:
+                idet_sel = []
+                for idet in range(N_DETECTOR):
+                    if self.Q[idet]>350 and self.Q[idet]<1000 and self.valid[idet]:
+                        idet_sel.append(idet)
+
+                #if self.valid.sum() == 2:
+                if len(idet_sel) == 2:
+
                     # get the detector IDs
-                    idet_sel = []
+                    #idet_sel = []
                     energy_total = self.Q.sum()
 
                     if energy_total > self.energy_min:
                         #
                         # get the indices of the two hits
                         #
-                        for idet in range(N_DETECTOR):
-                            if self.valid[idet]:
-                                idet_sel.append(idet)
+                        #for idet in range(N_DETECTOR):
+                        #    if self.valid[idet]:
+                        #        idet_sel.append(idet)
 
                         id0 = idet_sel[0]
                         id1 = idet_sel[1]
@@ -105,7 +112,7 @@ class Calibration(DT5550):
                         self.delta_time_all.append(self.tc[id1]-self.tc[id0])
                         self.delta_time_all_nocorr.append(self.t[id1]-self.t[id0])
                         # delta with respect to channel0: used for calibration
-                        if id0 == 0:  # we will calculaet the time difference with respect to idet=0
+                        if id0 == 0 and self.Q[id1]<700 and self.Q[id0]<700:  # we will calculate the time difference with respect to idet=0
                             self.delta_time[id1].append(self.tc[id1] - self.tc[id0])
 
         #

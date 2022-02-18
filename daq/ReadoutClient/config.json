@@ -1,6 +1,6 @@
 {
     "version": "Rev.C",
-    "source": "Co60",
+    "source": "Na22",
     "comment": "just work and no play makes AP a bad boy",
     "registers": {
         "V_max": 1.8,
@@ -13,14 +13,14 @@
         "BLHOLD": 250,
         "WINDOW": 350,
         "TMODE": 0,
-        "NMIN": 2,
-        "EMIN": 1500
+        "NMIN": 3,
+        "EMIN": 2000
     },
     "detector_settings": [
         {
             "det_id": 0,
-            "GAIN": 281,
-            "THRS": 1000,
+            "GAIN": 282,
+            "THRS": 500,
             "INVERT": 1,
             "BASE": 414,
             "TOFF": 0,
@@ -32,94 +32,94 @@
         },
         {
             "det_id": 1,
-            "GAIN": 310,
-            "THRS": 1000,
+            "GAIN": 311,
+            "THRS": 300,
             "INVERT": 1,
             "BASE": 674,
-            "TOFF": -11,
+            "TOFF": 12,
             "HV": 575,
             "GCOR": 1.0,
             "RMEAN": 1259.4457346825782,
             "RSIGMA": 12.89880929436924,
-            "THETA": 0.5235987
+            "THETA": 0.0
         },
         {
             "det_id": 2,
-            "GAIN": 494,
+            "GAIN": 491,
             "THRS": 300,
             "INVERT": 1,
             "BASE": 361,
-            "TOFF": -26,
+            "TOFF": 0,
             "HV": 920,
             "GCOR": 1.0,
             "RMEAN": 1270.0117300201466,
             "RSIGMA": 12.568376466909957,
-            "THETA": 0.78539805
+            "THETA": 0.0
         },
         {
             "det_id": 3,
-            "GAIN": 252,
-            "THRS": 1000,
+            "GAIN": 246,
+            "THRS": 500,
             "INVERT": 1,
             "BASE": 384,
-            "TOFF": -17,
+            "TOFF": 9,
             "HV": 645,
             "GCOR": 1.0,
             "RMEAN": 1267.3288719376462,
             "RSIGMA": 14.576765641725293,
-            "THETA": 1.0471974
+            "THETA": 0.0
         },
         {
             "det_id": 4,
-            "GAIN": 310,
+            "GAIN": 204,
             "THRS": 500,
             "INVERT": 1,
             "BASE": 386,
-            "TOFF": -27,
+            "TOFF": -1,
             "HV": 905,
             "GCOR": 1.0,
             "RMEAN": 1232.467728742026,
             "RSIGMA": 14.37996507867877,
-            "THETA": 2.225294475
+            "THETA": 0.0
         },
         {
             "det_id": 5,
-            "GAIN": 239,
-            "THRS": 750,
+            "GAIN": 234,
+            "THRS": 500,
             "INVERT": 1,
             "BASE": 606,
-            "TOFF": -17,
+            "TOFF": 8,
             "HV": 680,
             "GCOR": 1.0,
             "RMEAN": 1188.9494176871092,
             "RSIGMA": 13.071891472767177,
-            "THETA": 2.6179935
+            "THETA": 0.0
         },
         {
             "det_id": 6,
-            "GAIN": 276,
-            "THRS": 1000,
+            "GAIN": 279,
+            "THRS": 500,
             "INVERT": 1,
             "BASE": 617,
-            "TOFF": -18,
+            "TOFF": 7,
             "HV": 725,
             "GCOR": 1.0,
             "RMEAN": 1265.12201103366,
             "RSIGMA": 12.949540324553405,
-            "THETA": 3.1415922
+            "THETA": 0.0
         },
         {
             "det_id": 7,
             "GAIN": 309,
-            "THRS": 1000,
+            "THRS": 500,
             "INVERT": 1,
             "BASE": 729,
-            "TOFF": -15,
+            "TOFF": 10,
             "HV": 615,
             "GCOR": 1.0,
             "RMEAN": 1268.0822403838833,
             "RSIGMA": 13.132137146692376,
-            "THETA": -174.51542147324358
+            "THETA": 0.0
         }
     ],
     "waveform_settings": {
