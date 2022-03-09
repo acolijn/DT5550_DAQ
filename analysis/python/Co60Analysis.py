@@ -72,6 +72,7 @@ def gauss_fit(data, **kwargs):
     x = .5 * (xe[:-1] + xe[1:])
     # lmfit it....
     gmodel = Model(gauss)
+
     result = gmodel.fit(y, x=x, weights=1, A=p0[0], mu=p0[1], sigma=p0[2])
 
     fit_par = np.zeros(3)
