@@ -49,6 +49,7 @@ class DT5550:
         self.filename = kwargs.pop('file', 'None')
         self.config_file = kwargs.pop('config', 'None')
 
+
         if (self.indir == 'None') and (self.filename == 'None'):
             print('DT5550:: no data files specified.... re-initialize before use')
             return
@@ -67,6 +68,11 @@ class DT5550:
         if self.config_file == 'None':
             self.config_file = glob.glob(self.indir + '/config*.json')[0]
 
+        # summary data file
+        self.hd5_file = 'None'
+        hd5_list = glob.glob(self.indir + '/*.hd5')
+        if len(hd5_list) == 1:
+            self.hd5_file = hd5_list[0]
 
         print('DT5550:: Data recorded with config: ', self.config_file)
         f = open(self.config_file,'r')
