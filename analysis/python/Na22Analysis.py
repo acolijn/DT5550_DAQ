@@ -3,7 +3,60 @@ from DT5550 import *
 import numpy as np
 import pandas as pd
 
+from scipy import special
+from scipy.optimize import curve_fit
+
 N_DETECTOR = 8
+
+
+def dt_model(x, *pars):
+    """
+    Fit to the dt distribution
+
+    1. Gauss around zero with width sigma to account for zero-lifetime component
+    2. Exp(tau0) (x) Gauss(sigma)
+    3. Exp(tau1) (x) Gauss(sigma)
+
+    pars[0] = amplitude of the zero lifetime Gaussian
+    pars[1] = timing resolution sigma
+    pars[2] = amplitude of short lifetime exponential
+    pars[3] = short lifetime
+    pars[4] = amplitude of long lifetime exponential
+    pars[5] = long lifetime
+    pars[6] = constant background due to pile-up
+
+    A.P. Colijn / 13-03-2022
+
+    """
+    A0 = pars[0]
+    sigma = pars[1]
+
+    A1 = pars[2]
+    tau1 = pars[3]
+    A2 = pars[4]
+    tau2 = pars[5]
+    C = pars[6]
+
+    # zero-lifetime Gaussian
+    arg = -x ** 2 / sigma ** 2 / 2
+    fval = A0 * np.exp(arg) / sigma / np.sqrt(2 * np.pi)
+
+    # short lifetime exponential convoluted with Gaussian. Gaussian has same sigma as zero-lfetime component
+    lam = 1. / tau1
+    arg0 = -lam * (x - sigma ** 2 * lam / 2.)
+    arg1 = (x - sigma ** 2 * lam) / np.sqrt(2.) / sigma
+    fval = fval + A1 * np.exp(arg0) * (1 + special.erf(arg1)) / 2
+
+    # long lifetime exponential convoluted with Gaussian. Gaussian has same sigma as zero-lfetime component
+    lam = 1. / tau2
+    arg0 = -lam * (x - sigma ** 2 * lam / 2.)
+    arg1 = (x - sigma ** 2 * lam) / np.sqrt(2.) / sigma
+    fval = fval + A2 * np.exp(arg0) * (1 + special.erf(arg1)) / 2
+
+    # constant factor to take into account pile-up
+    fval = fval + C
+
+    return fval
 
 
 class Na22Analysis(DT5550):
@@ -165,3 +218,65 @@ class Na22Analysis(DT5550):
                 record = {'etot': self.Q.sum(), 'etag': self.Q[i0], 'epos': esum, 'npos': nn, 'dt': dt.mean(),
                           'sdt': np.sqrt(dt.var())}
                 self.data_sel.append(record)  # we select this event......
+
+    def fit_dt_model(self, **kwargs):
+        """
+        Fit delta time model to the observed distribution
+
+        """
+
+        bin_width = kwargs.pop('bin_width', 1)
+        plot_range = kwargs.pop('range', (-50, 250))
+
+        #
+        # make an array with the time differences
+        #
+        toffset = 2.5
+        cut = (self.df['sdt'] < 5) & (abs(self.df['epos'] - 1022) < 75)
+        tt = self.df['dt'][cut] - toffset
+
+        #
+        # fit range..... (the range argument is only used for plotting)
+        #
+        xr = (-500, 1000)
+        bins = int((xr[1]-xr[0])/bin_width)
+        #
+        # make a histogram with the time differences and unpack it
+        #
+        y, xe = np.histogram(tt, bins=bins, range=xr)
+        x = .5 * (xe[:-1] + xe[1:])
+        plt.figure(figsize=(10, 5))
+
+        #
+        # fit the model to the dt distribution
+        #
+
+        # initial fit values
+        s0 = 1.5
+        a0 = max(y)*np.sqrt(2*np.pi)*s0
+        popt = np.array([a0, s0, a0/10, 2.3, 300, 100, y[-1]])
+        popt, pcov = curve_fit(dt_model, x, y, sigma=np.sqrt(y),
+                               p0=popt,
+                               bounds=((0, 0, 0, 0, 0, 0, 0),
+                                       (np.inf, np.inf, np.inf, np.inf, np.inf, np.inf, np.inf)))
+        txt = '\n'.join([r'$A_G$ = {:5.1f} $\pm$ {:5.1f}'.format(popt[0], np.sqrt(pcov[0][0])),
+                         r'$\sigma$ = {:5.2f} $\pm$ {:5.2f} ns'.format(popt[1], np.sqrt(pcov[1][1])),
+                         r'$A_0$ = {:5.1f} $\pm$ {:5.1f}'.format(popt[2], np.sqrt(pcov[2][2])),
+                         r'$\tau_0$ = {:5.2f} $\pm$ {:5.2f} ns'.format(popt[3], np.sqrt(pcov[3][3])),
+                         r'$A_1$ = {:5.1f} $\pm$ {:5.1f}'.format(popt[4], np.sqrt(pcov[4][4])),
+                         r'$\tau_1$ = {:5.2f} $\pm$ {:5.2f} ns'.format(popt[5], np.sqrt(pcov[5][5])),
+                         r'C = {:5.1f} $\pm$ {:5.2f}'.format(popt[6], np.sqrt(pcov[6][6]))
+                         ])
+        plt.text(plot_range[1]*0.7, max(y)*0.9, txt, va='top')
+        # plt.errorbar(x,y,yerr=np.sqrt(y), marker='o', markersize=4, ls='none' )
+        plt.hist(tt, bins=bins, range=xr, histtype='step', linewidth=1)
+        xx = np.linspace(xr[0], xr[1], 1000)
+        plt.grid()
+        plt.plot(xx, dt_model(xx, *popt), color='green')
+        plt.plot([xr[0], xr[1]], [popt[6], popt[6]], '--', color='green')
+        print(popt)
+        # plt.ylim([100,1000])
+        plt.yscale('log')
+        plt.xlim(plot_range)
+        plt.xlabel('$\Delta t$ (ns)', fontsize=14)
+        plt.show()

@@ -43,10 +43,12 @@ class Calibration(DT5550):
     def set_energy_min(self, emin):
         self.energy_min = emin
 
-    def process_calibration_data(self):
+    def process_calibration_data(self, **kwargs):
         """
         Process the data for use either in calibration
         """
+
+        nfmax = kwargs.pop('max_files',99999)
 
         print("Calibration:: Begin processing data....")
         # reinitialize the delta_time array
@@ -56,7 +58,11 @@ class Calibration(DT5550):
         #
         #  loop over all events
         #
+        nf = 0
         for file in self.filenames:
+            if nf >= nfmax:
+                break
+            nf = nf + 1
             #
             # open the data file
             #
