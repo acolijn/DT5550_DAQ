@@ -34,7 +34,7 @@ def rad2deg(rad):
     return rad*57.2957795
 
 
-class GeometryWidget(QWidget, define_geometry.Ui_Form):
+class GeometryWidget(QWidget, define_geometry.Ui_DefineGeometry):
     def __init__(self, parent=None):
         super(GeometryWidget, self).__init__(parent)
         self.setupUi(self)
@@ -139,6 +139,8 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         self.doit = QProcess()
         self.doit.readyReadStandardOutput.connect(self.handle_stdout)
         self.doit.finished.connect(self.process_finished)  # Clean up once complete.
+
+        self.progressBar.setValue(0)
 
         self.open_geometry_button.clicked.connect(self.open_geometry_window)
         self.w.close_window.clicked.connect(self.close_geometry_window)
@@ -294,10 +296,8 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
             for label in self.hlabels:
                 icol = self.hlabels.index(label)
                 value = self.detectorSettings.item(idet, icol).text()
-                if label == "THETA":
-                    self.config_new['detector_settings'][idet][label] = deg2rad(float(value))
-                else:
-                    self.config_new['detector_settings'][idet][label] = int(float(value))
+
+                self.config_new['detector_settings'][idet][label] = int(float(value))
 
 
     def loadConfiguration(self):
@@ -371,7 +371,7 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         """
         table = self.detectorSettings
         table.setRowCount(N_DETECTOR)
-        self.hlabels = ("GAIN", "THRS", "INVERT", "BASE", "TOFF", "HV", "THETA")
+        self.hlabels = ("GAIN", "THRS", "INVERT", "BASE", "TOFF", "HV")
 
         table.setColumnCount(len(self.hlabels))
 
@@ -394,7 +394,7 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         width += tab.frameWidth() * 2
         tab.setFixedWidth(width*1.02)
         tab.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-
+        tab.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
     def fillDetectorSettingsTable(self):
         """
@@ -410,12 +410,7 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
                 else:
                     val = -1.0
 
-                if label == 'THETA':
-                    table.setItem(idet, icol, QTableWidgetItem(str(rad2deg(val))))
-                else:
-                    table.setItem(idet, icol, QTableWidgetItem(str(val)))
-
-
+                table.setItem(idet, icol, QTableWidgetItem(str(val)))
 
 
 def main():
@@ -426,6 +421,7 @@ def main():
     form = DAQgui()
     form.show()
     app.exec_()
+
 
 if __name__ == '__main__':
     main()

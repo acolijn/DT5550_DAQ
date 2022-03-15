@@ -8,24 +8,24 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-class Ui_Form(object):
-    def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(706, 330)
-        self.geometrySettings = QtWidgets.QTableWidget(Form)
-        self.geometrySettings.setGeometry(QtCore.QRect(250, 30, 441, 291))
+class Ui_DefineGeometry(object):
+    def setupUi(self, DefineGeometry):
+        DefineGeometry.setObjectName("DefineGeometry")
+        DefineGeometry.resize(619, 313)
+        self.geometrySettings = QtWidgets.QTableWidget(DefineGeometry)
+        self.geometrySettings.setGeometry(QtCore.QRect(250, 30, 361, 271))
         self.geometrySettings.setObjectName("geometrySettings")
         self.geometrySettings.setColumnCount(0)
         self.geometrySettings.setRowCount(0)
-        self.close_window = QtWidgets.QPushButton(Form)
+        self.close_window = QtWidgets.QPushButton(DefineGeometry)
         self.close_window.setGeometry(QtCore.QRect(20, 30, 211, 46))
         self.close_window.setObjectName("close_window")
 
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
+        self.retranslateUi(DefineGeometry)
+        QtCore.QMetaObject.connectSlotsByName(DefineGeometry)
 
-    def retranslateUi(self, Form):
+    def retranslateUi(self, DefineGeometry):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Form"))
-        self.close_window.setText(_translate("Form", "Write && Close"))
+        DefineGeometry.setWindowTitle(_translate("DefineGeometry", "Form"))
+        self.close_window.setText(_translate("DefineGeometry", "Write && Close"))
 
