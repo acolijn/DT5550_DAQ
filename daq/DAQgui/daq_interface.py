@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'daq_interface.ui'
+# Form implementation generated from reading ui file '.\daq_interface.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -57,14 +57,20 @@ class Ui_MainWindow(object):
         self.label_2 = QtWidgets.QLabel(self.centralwidget)
         self.label_2.setGeometry(QtCore.QRect(600, 50, 64, 25))
         self.label_2.setObjectName("label_2")
+        self.open_geometry_button = QtWidgets.QPushButton(self.centralwidget)
+        self.open_geometry_button.setGeometry(QtCore.QRect(940, 40, 211, 46))
+        self.open_geometry_button.setObjectName("open_geometry_button")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1181, 38))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1181, 21))
         self.menubar.setObjectName("menubar")
+        self.menuExit = QtWidgets.QMenu(self.menubar)
+        self.menuExit.setObjectName("menuExit")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+        self.menubar.addAction(self.menuExit.menuAction())
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -79,4 +85,6 @@ class Ui_MainWindow(object):
         self.storeWaveforms.setText(_translate("MainWindow", "waveforms"))
         self.label.setText(_translate("MainWindow", "Number of Events"))
         self.label_2.setText(_translate("MainWindow", "Source"))
+        self.open_geometry_button.setText(_translate("MainWindow", "Geometry"))
+        self.menuExit.setTitle(_translate("MainWindow", "Exit"))
 

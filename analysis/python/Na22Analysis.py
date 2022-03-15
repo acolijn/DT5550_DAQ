@@ -232,7 +232,7 @@ class Na22Analysis(DT5550):
         # make an array with the time differences
         #
         toffset = 2.5
-        cut = (self.df['sdt'] < 5) & (abs(self.df['epos'] - 1022) < 75)
+        cut = (self.df['sdt'] < 5) & (abs(self.df['epos'] - 1022) < 100)
         tt = self.df['dt'][cut] - toffset
 
         #

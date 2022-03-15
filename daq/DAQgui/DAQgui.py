@@ -1,11 +1,13 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
-from PyQt5 import QtWidgets, QtCore
+import pywt
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QWidget
+from PyQt5 import Qt, QtWidgets, QtCore
 from PyQt5.QtCore import QThread, QProcess
 
 from datetime import datetime
 import sys
 import json
 import daq_interface
+import define_geometry
 
 N_DETECTOR = 8
 N_DIGITAL_OUT = 4
@@ -32,6 +34,89 @@ def rad2deg(rad):
     return rad*57.2957795
 
 
+class GeometryWidget(QWidget, define_geometry.Ui_Form):
+    def __init__(self, parent=None):
+        super(GeometryWidget, self).__init__(parent)
+        self.setupUi(self)
+        self.config = []
+        self.hlabels = []
+        self.vlabels = []
+
+    def initGeometrySettingsTable(self):
+        """
+        Initialize the table with individual detector settings
+        """
+        table = self.geometrySettings
+        table.setRowCount(N_DETECTOR)
+
+        self.hlabels = ("X", "Y", "Z")
+
+        table.setColumnCount(len(self.hlabels))
+
+        hlabels_display = ("X (mm)", "Y (mm)", "Z (mm)")
+        table.setHorizontalHeaderLabels(hlabels_display)
+        for i in range(N_DETECTOR):
+            name = "CH "+str(i)
+            self.vlabels.append(name)
+        table.setVerticalHeaderLabels(self.vlabels)
+
+        self.fillGeometrySettingsTable()
+
+        self.setTableSize(self.geometrySettings)
+
+
+    def fillGeometrySettingsTable(self):
+        """
+        Fill the table with settings from the current config file
+        """
+        table = self.geometrySettings
+        for idet in range(N_DETECTOR):
+            for label in self.hlabels:
+                icol = self.hlabels.index(label)
+
+                if label in self.config['detector_settings'][idet].keys():
+                    val = self.config['detector_settings'][idet][label]
+                else:
+                    val = 0.0
+
+                table.setItem(idet, icol, QTableWidgetItem(str(val)))
+
+    def readGeometryFromTable(self):
+        """
+        Read the values from the geometry table to make a new configuration
+        """
+        #self.config_new = self.config
+
+        # individual detector settings
+        for idet in range(N_DETECTOR):
+            for label in self.hlabels:
+                icol = self.hlabels.index(label)
+                value = self.geometrySettings.item(idet, icol).text()
+                self.config['detector_settings'][idet][label] = float(value)
+
+    def setTableSize(self, tab):
+
+        # width
+        width = tab.verticalHeader().width()
+        width += tab.horizontalHeader().length()
+        if tab.verticalScrollBar().isVisible():
+            width += tab.verticalScrollBar().width()
+        width += tab.frameWidth() * 2
+        tab.setFixedWidth(width*1.05)
+        tab.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+
+        # height
+        #height = tab.verticalHeader().height()
+        #height += tab.horizontalHeader().height()
+        #if tab.horizontalScrollBar().isVisible():
+        #    height += tab.horizontalScrollBar().height()
+        #height += tab.rowHeight()*8
+        #tab.setFixedHeight(height*1.01)
+
+        tab.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+
+
+
 class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
     """
     GUI for DAQ
@@ -40,6 +125,8 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         super(DAQgui, self).__init__(parent)
         # setup the GUI
         self.setupUi(self)
+
+        self.w = GeometryWidget()
 
         self.default_config_file = '../ReadoutClient/config.json'
         self.config_file = 'None'
@@ -52,6 +139,11 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         self.doit = QProcess()
         self.doit.readyReadStandardOutput.connect(self.handle_stdout)
         self.doit.finished.connect(self.process_finished)  # Clean up once complete.
+
+        self.open_geometry_button.clicked.connect(self.open_geometry_window)
+        self.w.close_window.clicked.connect(self.close_geometry_window)
+
+        #self.define_geometry = Second(self)
 
         # read the default configuration file....
         self.readConfiguration()
@@ -72,6 +164,22 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         # what to do if stop is clicked
         self.run_stop.setDisabled(True)
         self.run_stop.clicked.connect(self.runStop)
+
+    def close_geometry_window(self):
+        """
+        Overwrite the configuration on closing the geometry window
+        """
+        self.w.close()
+        self.w.readGeometryFromTable()
+        self.config = self.w.config
+
+    def open_geometry_window(self):
+        """
+        Open the geometry definition window
+        """
+        self.w.show()
+        self.w.config = self.config
+        self.w.initGeometrySettingsTable()
 
     def runStart(self):
         """
@@ -285,6 +393,8 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
             width += tab.verticalScrollBar().width()
         width += tab.frameWidth() * 2
         tab.setFixedWidth(width*1.02)
+        tab.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+
 
     def fillDetectorSettingsTable(self):
         """
@@ -304,6 +414,8 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
                     table.setItem(idet, icol, QTableWidgetItem(str(rad2deg(val))))
                 else:
                     table.setItem(idet, icol, QTableWidgetItem(str(val)))
+
+
 
 
 def main():
