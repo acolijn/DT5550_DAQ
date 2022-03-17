@@ -11,6 +11,7 @@ from matplotlib.pyplot import cm
 N_DETECTOR = 8
 N_DIGITAL_OUT = 4
 
+# nice dark style for GUI
 import qdarkstyle
 
 fontsize_axis = 10
