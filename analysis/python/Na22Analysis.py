@@ -223,16 +223,28 @@ class Na22Analysis(DT5550):
         """
         Fit delta time model to the observed distribution
 
+        Input:
+
+        bin_width = bin width of delta_t histogram in ns
+        plot_range = plot range (not the fit range, which is currently fixed to dt=(-500ns, 1000ns)
+        sdt_max = maximum spread of the time measurement of the 2/3 gammas
+        de_max = maximum energy difference in keV to 2*me for the 2/3 gammas
+        toffset = additional time offset correction in ns to let peak coincide with zero (probably due to imperfect
+                  timewalk caculations)
+
+        A.P. Colijn / 18-03-2022
         """
 
         bin_width = kwargs.pop('bin_width', 1)
         plot_range = kwargs.pop('range', (-50, 250))
+        sdt_max = kwargs.pop('sigma_max', 5)
+        de_max = kwargs.pop('de_max', 100)
+        toffset = kwargs.pop('t_offset', 0)
 
         #
         # make an array with the time differences
         #
-        toffset = 2.5
-        cut = (self.df['sdt'] < 5) & (abs(self.df['epos'] - 1022) < 100)
+        cut = (self.df['sdt'] < sdt_max) & (abs(self.df['epos'] - 1022) < de_max)
         tt = self.df['dt'][cut] - toffset
 
         #
@@ -254,7 +266,7 @@ class Na22Analysis(DT5550):
         # initial fit values
         s0 = 1.5
         a0 = max(y)*np.sqrt(2*np.pi)*s0
-        popt = np.array([a0, s0, a0/10, 2.3, 300, 100, y[-1]])
+        popt = np.array([a0, s0, a0/10, 2.3, 1000, 100, y[-1]])
         popt, pcov = curve_fit(dt_model, x, y, sigma=np.sqrt(y),
                                p0=popt,
                                bounds=((0, 0, 0, 0, 0, 0, 0),
@@ -267,16 +279,17 @@ class Na22Analysis(DT5550):
                          r'$\tau_1$ = {:5.2f} $\pm$ {:5.2f} ns'.format(popt[5], np.sqrt(pcov[5][5])),
                          r'C = {:5.1f} $\pm$ {:5.2f}'.format(popt[6], np.sqrt(pcov[6][6]))
                          ])
-        plt.text(plot_range[1]*0.7, max(y)*0.9, txt, va='top')
+        plt.text(plot_range[0]+(plot_range[1]-plot_range[0])*0.7, max(y)*0.9, txt, va='top',
+                 bbox=dict(facecolor='white', edgecolor='blue', pad=5.0))
         # plt.errorbar(x,y,yerr=np.sqrt(y), marker='o', markersize=4, ls='none' )
         plt.hist(tt, bins=bins, range=xr, histtype='step', linewidth=1)
         xx = np.linspace(xr[0], xr[1], 1000)
         plt.grid()
         plt.plot(xx, dt_model(xx, *popt), color='green')
         plt.plot([xr[0], xr[1]], [popt[6], popt[6]], '--', color='green')
-        print(popt)
+        # print(popt)
         # plt.ylim([100,1000])
         plt.yscale('log')
         plt.xlim(plot_range)
         plt.xlabel('$\Delta t$ (ns)', fontsize=14)
-        plt.show()
+        #plt.show()

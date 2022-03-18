@@ -12,6 +12,7 @@ import pandas as pd
 
 N_DETECTOR = 8
 
+
 def legendre_polynomial(x, A, c2, c4):
     p = [A, c2, c4]
 

@@ -34,6 +34,7 @@ def word_unpack(word, ioff):
 
     return ival0, ival1
 
+
 class DT5550:
     """
     DT5550 class to handle binary data
