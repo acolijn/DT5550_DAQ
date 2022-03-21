@@ -394,6 +394,7 @@ class Calibration(DT5550):
         Plot the energy distribution
         """
         plot_range = kwargs.pop('range', (1000, 1500))
+        yscale = kwargs.pop('yscale', 'linear')
 
         plt.figure(figsize=(10, 15))
 
@@ -413,6 +414,7 @@ class Calibration(DT5550):
                      'r-', linewidth=1)
 
             plt.ylim([0, 1.2*max(y)])
+            plt.yscale(yscale)
             txt = '$E_{:1d}$ (keV)'.format(idet)
             plt.xlabel(txt)
             plt.legend(loc='upper left')

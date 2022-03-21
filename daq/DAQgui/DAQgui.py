@@ -136,11 +136,13 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         self.g_hlabels = []
         self.vlabels = []
         self.logcounter = 0
+        self.file_counter = 0
         self.doit = QProcess()
         self.doit.readyReadStandardOutput.connect(self.handle_stdout)
         self.doit.finished.connect(self.process_finished)  # Clean up once complete.
 
         self.progressBar.setValue(0)
+        self.progressBar.setVisible(False)
 
         self.open_geometry_button.clicked.connect(self.open_geometry_window)
         self.w.close_window.clicked.connect(self.close_geometry_window)
@@ -191,7 +193,8 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         self.run_start.setDisabled(True)
         self.loadConfig.setDisabled(True)
         self.run_stop.setEnabled(True)
-
+        self.progressBar.setVisible(True)
+        self.progressBar.setValue(0)
 
         # 1. write configuration
         self.writeConfiguration()
@@ -217,6 +220,7 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         self.run_start.setEnabled(True)
         self.loadConfig.setEnabled(True)
         self.run_stop.setDisabled(True)
+        self.progressBar.setVisible(False)
 
         #self.doit = None -> with this line the program crashes
 
@@ -238,6 +242,17 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         for line in lines:
             line = line.strip()
             if line != '':
+                if 'Output written to' in line:
+                    print('FOUND next file', line)
+                    self.file_counter = self.file_counter + 1
+
+                if 'Acquired' in line:
+                    words = line.split(' ')
+                    if len(words) == 5:
+                        # print(len(words),' event = >', words[-1] ,'<')
+                        event_counter = (self.file_counter - 1)*100000 + int(words[-1])
+                        value = 100.*event_counter / int(self.numberOfEvents.text())
+                        self.progressBar.setValue(int(value))
                 prompt = '[' + str(self.logcounter) + '] ' + prompt_base
                 self.logWindow.append(prompt + line)
                 self.logcounter = self.logcounter + 1
@@ -392,7 +407,7 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         if tab.verticalScrollBar().isVisible():
             width += tab.verticalScrollBar().width()
         width += tab.frameWidth() * 2
-        tab.setFixedWidth(width*1.02)
+        tab.setFixedWidth(int(width*1.02))
         tab.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         tab.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
