@@ -7,6 +7,8 @@ from scipy import special
 from scipy.optimize import curve_fit
 
 N_DETECTOR = 8
+ETOT_THEORY = 2296.5
+E1274 = 1274.5
 
 
 def dt_model(x, *pars):
@@ -73,6 +75,9 @@ class Na22Analysis(DT5550):
         self.data_sel = []
         self.df = pd.DataFrame()
 
+        self.detot_max = 100.
+        self.dr_max = 3.
+
     def process_data(self, **kwargs):
         """
         Process the data for use in the Co60 analysis
@@ -84,6 +89,10 @@ class Na22Analysis(DT5550):
 
         nfmax = kwargs.pop('max_files', 99999)  # maximum number of files to process (handy for debugging)
         data = kwargs.pop('data', 'raw')
+
+        # raw data selection......
+        self.detot_max = kwargs.pop('detot_max', 100)  # cut on |E(1274)+E(gg/ggg) - 2296.5keV| < detot_max
+        self.dr_max = kwargs.pop('dr_max', 3.)  # cut on | R - RMEAN | < dr_max*RSIGMA
 
         print("Na22Analysis:: Begin processing data....")
 
@@ -158,7 +167,7 @@ class Na22Analysis(DT5550):
 
         print("Na22Analysis:: Processing data - Done....")
 
-    def process_event(self, **kwargs):
+    def process_event(self):
         """
         Process a single event and make an event selection
         """
@@ -173,7 +182,7 @@ class Na22Analysis(DT5550):
         # 1. the total energy of a Na22 decay is observed
         # 2. there are 3 or more detectors that registers an energy deposit
         #
-        if (nh >= 3) and (self.Q.sum() > 2150) and (self.Q.sum() < 2400):
+        if (nh >= 3) and (abs(self.Q.sum() - ETOT_THEORY) < self.detot_max):
             #
             # 1274 gamma ray from Ne22
             #
@@ -187,7 +196,7 @@ class Na22Analysis(DT5550):
                 rmean = self.config['detector_settings'][idet]['RMEAN']
                 rsig = self.config['detector_settings'][idet]['RSIGMA']
 
-                if abs(self.Q[idet] - 1274) < 100 and (self.valid[idet]) and (abs(rr - rmean) < 3 * rsig):
+                if abs(self.Q[idet] - E1274) < 100 and (self.valid[idet]) and (abs(rr - rmean) < self.dr_max * rsig):
                     # print('1274keV ', idet,'t =',io.tc[idet],'E =',io.Q[idet])
                     t0 = self.tc[idet]
                     i0 = idet
@@ -203,7 +212,7 @@ class Na22Analysis(DT5550):
                 rr = self.R[idet]
                 rmean = self.config['detector_settings'][idet]['RMEAN']
                 rsig = self.config['detector_settings'][idet]['RSIGMA']
-                if (self.valid[idet]) and (idet != i0) and (abs(rr - rmean) < 3 * rsig):
+                if (self.valid[idet]) and (idet != i0) and (abs(rr - rmean) < self.dr_max * rsig):
                     nn = nn + 1
                     esum = esum + self.Q[idet]
                     dt.append(self.tc[idet] - t0)  # time difference wrt to 1274keV gamma ray
@@ -230,7 +239,7 @@ class Na22Analysis(DT5550):
         sdt_max = maximum spread of the time measurement of the 2/3 gammas
         de_max = maximum energy difference in keV to 2*me for the 2/3 gammas
         toffset = additional time offset correction in ns to let peak coincide with zero (probably due to imperfect
-                  timewalk caculations)
+                  timewalk calculations)
 
         A.P. Colijn / 18-03-2022
         """
@@ -269,7 +278,7 @@ class Na22Analysis(DT5550):
         popt = np.array([a0, s0, a0/10, 2.3, 1000, 100, y[-1]])
         popt, pcov = curve_fit(dt_model, x, y, sigma=np.sqrt(y),
                                p0=popt,
-                               bounds=((0, 0, 0, 0, 0, 0, 0),
+                               bounds=((-np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf),
                                        (np.inf, np.inf, np.inf, np.inf, np.inf, np.inf, np.inf)))
         txt = '\n'.join([r'$A_G$ = {:5.1f} $\pm$ {:5.1f}'.format(popt[0], np.sqrt(pcov[0][0])),
                          r'$\sigma$ = {:5.2f} $\pm$ {:5.2f} ns'.format(popt[1], np.sqrt(pcov[1][1])),
@@ -283,7 +292,7 @@ class Na22Analysis(DT5550):
                  bbox=dict(facecolor='white', edgecolor='blue', pad=5.0))
         # plt.errorbar(x,y,yerr=np.sqrt(y), marker='o', markersize=4, ls='none' )
         plt.hist(tt, bins=bins, range=xr, histtype='step', linewidth=1)
-        xx = np.linspace(xr[0], xr[1], 1000)
+        xx = np.linspace(xr[0], xr[1], 10000)
         plt.grid()
         plt.plot(xx, dt_model(xx, *popt), color='green')
         plt.plot([xr[0], xr[1]], [popt[6], popt[6]], '--', color='green')
