@@ -136,6 +136,7 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         self.g_hlabels = []
         self.vlabels = []
         self.logcounter = 0
+        self.nevent = 0
         self.file_counter = 0
         self.doit = QProcess()
         self.doit.readyReadStandardOutput.connect(self.handle_stdout)
@@ -189,6 +190,7 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         """
         start a run
         """
+        self.file_counter = 0
 
         self.run_start.setDisabled(True)
         self.loadConfig.setDisabled(True)
@@ -199,9 +201,9 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         # 1. write configuration
         self.writeConfiguration()
         # 2. compose the run command
-        nevent = int(self.numberOfEvents.text())
+        self.nevent = int(self.numberOfEvents.text())
 
-        cmd = PYTHON+r' ../ReadoutClient/runDAQ.py -n '+str(nevent)+' -c config.json '
+        cmd = PYTHON+r' ../ReadoutClient/runDAQ.py -n '+str(self.nevent)+' -c config.json '
         if self.storeWaveforms.isChecked():
             cmd = cmd + ' -w'
 
@@ -243,15 +245,16 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
             line = line.strip()
             if line != '':
                 if 'Output written to' in line:
-                    print('FOUND next file', line)
+                    #print('FOUND next file', line)
                     self.file_counter = self.file_counter + 1
+                    #print('file counter =', self.file_counter)
 
                 if 'Acquired' in line:
                     words = line.split(' ')
                     if len(words) == 5:
-                        # print(len(words),' event = >', words[-1] ,'<')
+                        #print(len(words), ' event = >', words[-1], '< file_count =',self.file_counter)
                         event_counter = (self.file_counter - 1)*100000 + int(words[-1])
-                        value = 100.*event_counter / int(self.numberOfEvents.text())
+                        value = 100.*event_counter / self.nevent
                         self.progressBar.setValue(int(value))
                 prompt = '[' + str(self.logcounter) + '] ' + prompt_base
                 self.logWindow.append(prompt + line)
