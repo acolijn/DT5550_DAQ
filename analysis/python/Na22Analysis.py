@@ -5,8 +5,14 @@ import pandas as pd
 
 from scipy import special
 from scipy.optimize import curve_fit
+import matplotlib.pyplot as plt
+from matplotlib import gridspec
+
+
 
 N_DETECTOR = 8
+ETOT_THEORY = 2296.5
+E1274 = 1274.5
 
 
 def dt_model(x, *pars):
@@ -36,6 +42,10 @@ def dt_model(x, *pars):
     A2 = pars[4]
     tau2 = pars[5]
     C = pars[6]
+
+    mu = pars[7]
+
+    x = x - mu
 
     # zero-lifetime Gaussian
     arg = -x ** 2 / sigma ** 2 / 2
@@ -73,6 +83,9 @@ class Na22Analysis(DT5550):
         self.data_sel = []
         self.df = pd.DataFrame()
 
+        self.detot_max = 100.
+        self.dr_max = 3.
+
     def process_data(self, **kwargs):
         """
         Process the data for use in the Co60 analysis
@@ -84,6 +97,10 @@ class Na22Analysis(DT5550):
 
         nfmax = kwargs.pop('max_files', 99999)  # maximum number of files to process (handy for debugging)
         data = kwargs.pop('data', 'raw')
+
+        # raw data selection......
+        self.detot_max = kwargs.pop('detot_max', 100)  # cut on |E(1274)+E(gg/ggg) - 2296.5keV| < detot_max
+        self.dr_max = kwargs.pop('dr_max', 3.)  # cut on | R - RMEAN | < dr_max*RSIGMA
 
         print("Na22Analysis:: Begin processing data....")
 
@@ -158,7 +175,7 @@ class Na22Analysis(DT5550):
 
         print("Na22Analysis:: Processing data - Done....")
 
-    def process_event(self, **kwargs):
+    def process_event(self):
         """
         Process a single event and make an event selection
         """
@@ -173,7 +190,7 @@ class Na22Analysis(DT5550):
         # 1. the total energy of a Na22 decay is observed
         # 2. there are 3 or more detectors that registers an energy deposit
         #
-        if (nh >= 3) and (self.Q.sum() > 2150) and (self.Q.sum() < 2400):
+        if (nh >= 3) and (abs(self.Q.sum() - ETOT_THEORY) < self.detot_max):
             #
             # 1274 gamma ray from Ne22
             #
@@ -187,7 +204,7 @@ class Na22Analysis(DT5550):
                 rmean = self.config['detector_settings'][idet]['RMEAN']
                 rsig = self.config['detector_settings'][idet]['RSIGMA']
 
-                if abs(self.Q[idet] - 1274) < 100 and (self.valid[idet]) and (abs(rr - rmean) < 3 * rsig):
+                if abs(self.Q[idet] - E1274) < 100 and (self.valid[idet]) and (abs(rr - rmean) < self.dr_max * rsig):
                     # print('1274keV ', idet,'t =',io.tc[idet],'E =',io.Q[idet])
                     t0 = self.tc[idet]
                     i0 = idet
@@ -203,7 +220,7 @@ class Na22Analysis(DT5550):
                 rr = self.R[idet]
                 rmean = self.config['detector_settings'][idet]['RMEAN']
                 rsig = self.config['detector_settings'][idet]['RSIGMA']
-                if (self.valid[idet]) and (idet != i0) and (abs(rr - rmean) < 3 * rsig):
+                if (self.valid[idet]) and (idet != i0) and (abs(rr - rmean) < self.dr_max * rsig):
                     nn = nn + 1
                     esum = esum + self.Q[idet]
                     dt.append(self.tc[idet] - t0)  # time difference wrt to 1274keV gamma ray
@@ -230,7 +247,7 @@ class Na22Analysis(DT5550):
         sdt_max = maximum spread of the time measurement of the 2/3 gammas
         de_max = maximum energy difference in keV to 2*me for the 2/3 gammas
         toffset = additional time offset correction in ns to let peak coincide with zero (probably due to imperfect
-                  timewalk caculations)
+                  timewalk calculations)
 
         A.P. Colijn / 18-03-2022
         """
@@ -257,7 +274,6 @@ class Na22Analysis(DT5550):
         #
         y, xe = np.histogram(tt, bins=bins, range=xr)
         x = .5 * (xe[:-1] + xe[1:])
-        plt.figure(figsize=(10, 5))
 
         #
         # fit the model to the dt distribution
@@ -266,11 +282,12 @@ class Na22Analysis(DT5550):
         # initial fit values
         s0 = 1.5
         a0 = max(y)*np.sqrt(2*np.pi)*s0
-        popt = np.array([a0, s0, a0/10, 2.3, 1000, 100, y[-1]])
+        popt = np.array([a0, s0, a0/10, 2.3, 1000, 100, y[-1], 2.5])
         popt, pcov = curve_fit(dt_model, x, y, sigma=np.sqrt(y),
                                p0=popt,
-                               bounds=((0, 0, 0, 0, 0, 0, 0),
-                                       (np.inf, np.inf, np.inf, np.inf, np.inf, np.inf, np.inf)))
+                               bounds=((-np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf, -np.inf),
+                                       (np.inf, np.inf, np.inf, np.inf, np.inf, np.inf, np.inf, np.inf)))
+        print(popt)
         txt = '\n'.join([r'$A_G$ = {:5.1f} $\pm$ {:5.1f}'.format(popt[0], np.sqrt(pcov[0][0])),
                          r'$\sigma$ = {:5.2f} $\pm$ {:5.2f} ns'.format(popt[1], np.sqrt(pcov[1][1])),
                          r'$A_0$ = {:5.1f} $\pm$ {:5.1f}'.format(popt[2], np.sqrt(pcov[2][2])),
@@ -279,17 +296,45 @@ class Na22Analysis(DT5550):
                          r'$\tau_1$ = {:5.2f} $\pm$ {:5.2f} ns'.format(popt[5], np.sqrt(pcov[5][5])),
                          r'C = {:5.1f} $\pm$ {:5.2f}'.format(popt[6], np.sqrt(pcov[6][6]))
                          ])
-        plt.text(plot_range[0]+(plot_range[1]-plot_range[0])*0.7, max(y)*0.9, txt, va='top',
+        #
+        # start the plot
+        #
+        #plt.figure(figsize=(10, 5))
+        #plt.subplot(2, 1, 1)
+        #fig = plt.figure(figsize=(10, 8))
+        spec = gridspec.GridSpec(ncols=1, nrows=2,
+                                 wspace=0.5,
+                                 hspace=0.0, height_ratios=[3, 1])
+
+        fig, (ax0, ax1) = plt.subplots(nrows=2, sharex='all', gridspec_kw={'height_ratios': [5, 2]})
+        fig.set_size_inches(10,5)
+        fig.subplots_adjust(hspace=0.05)
+        #fig.set_height(10)
+        #ax0 = fig.add_subplot(spec[0])
+        #ax1 = fig.add_subplot(spec[1], sharex=ax0)
+
+        ax0.hist(tt, bins=bins, range=xr, histtype='step', linewidth=1)
+        ax0.text(plot_range[0]+(plot_range[1]-plot_range[0])*0.7, max(y)*0.9, txt, va='top',
                  bbox=dict(facecolor='white', edgecolor='blue', pad=5.0))
-        # plt.errorbar(x,y,yerr=np.sqrt(y), marker='o', markersize=4, ls='none' )
-        plt.hist(tt, bins=bins, range=xr, histtype='step', linewidth=1)
-        xx = np.linspace(xr[0], xr[1], 1000)
-        plt.grid()
-        plt.plot(xx, dt_model(xx, *popt), color='green')
-        plt.plot([xr[0], xr[1]], [popt[6], popt[6]], '--', color='green')
-        # print(popt)
-        # plt.ylim([100,1000])
-        plt.yscale('log')
-        plt.xlim(plot_range)
-        plt.xlabel('$\Delta t$ (ns)', fontsize=14)
+        xx = np.linspace(xr[0], xr[1], 10000)
+        ax0.grid()
+        ax0.plot(xx, dt_model(xx, *popt), color='green')
+        ax0.plot([xr[0], xr[1]], [popt[6], popt[6]], '--', color='green')
+        ax0.set_yscale('log')
+        ax0.set_xlim(plot_range)
+
+        # calculate the residuals and plot them
+        res = y - dt_model(x, *popt)
+        pull = res / np.sqrt(y)
+        ax1.axhline(0, linewidth=1, color='grey')
+        for y in range(-10,10,1):
+            ax1.axhline(y, linewidth=0.5, color='grey')
+        ax1.plot(x, pull)
+
+        ax1.set_ylim([-5, 5])
+        ax1.set_xlabel('$\Delta t$ (ns)', fontsize=14)
+        ax1.set_ylabel('$\Delta / \sigma$', fontsize=14)
+
+
+
         #plt.show()
