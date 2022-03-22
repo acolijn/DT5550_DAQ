@@ -1,7 +1,6 @@
-import pywt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QWidget
-from PyQt5 import Qt, QtWidgets, QtCore
-from PyQt5.QtCore import QThread, QProcess
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtCore import QProcess
 
 from datetime import datetime
 import sys
@@ -23,7 +22,6 @@ if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
-
 
 
 def deg2rad(deg):
@@ -116,7 +114,6 @@ class GeometryWidget(QWidget, define_geometry.Ui_DefineGeometry):
         tab.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
 
-
 class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
     """
     GUI for DAQ
@@ -138,6 +135,9 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         self.logcounter = 0
         self.nevent = 0
         self.file_counter = 0
+        #
+        # the QProcess will run the actual data acquisition
+        #
         self.doit = QProcess()
         self.doit.readyReadStandardOutput.connect(self.handle_stdout)
         self.doit.finished.connect(self.process_finished)  # Clean up once complete.
@@ -203,13 +203,15 @@ class DAQgui(QMainWindow, daq_interface.Ui_MainWindow):
         # 2. compose the run command
         self.nevent = int(self.numberOfEvents.text())
 
+        #
+        # THIS IS WHERE THE MAGIC HAPPENS!
+        # All the information that is collected about the run inside the config.json file is now used to actually
+        # run the DT5550 unit
+        #
         cmd = PYTHON+r' ../ReadoutClient/runDAQ.py -n '+str(self.nevent)+' -c config.json '
         if self.storeWaveforms.isChecked():
             cmd = cmd + ' -w'
-
-        #self.doit.setProgram(PYTHON)
-        #self.doit.setArguments(['test_process.py'])
-        #self.doit.start('C:\ProgramData\Anaconda3\python test_process.py')
+        # start data taking
         self.doit.start(cmd)
 
 
