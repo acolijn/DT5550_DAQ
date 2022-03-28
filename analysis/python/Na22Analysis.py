@@ -29,7 +29,7 @@ def dt_model(x, *pars):
     pars[3] = short lifetime
     pars[4] = amplitude of long lifetime exponential
     pars[5] = long lifetime
-    pars[6] = constant background due to pile-up ...
+    pars[6] = constant background due to pile-up ....  bla
 
     A.P. Colijn / 13-03-2022
 
