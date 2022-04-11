@@ -232,8 +232,17 @@ class Na22Analysis(DT5550):
             # 2. a 1274keV gamma ray is actually found
             #
             if (nn >= 2) and (i0 != -1):
+
+                m12 = 0.
+                m23 = 0.
+                # reken reken reken
+                if nn == 3:
+                    # now do the calculation of m12 and m23
+                    m12 = 1.
+                    m23 = 1.
+
                 record = {'etot': self.Q.sum(), 'etag': self.Q[i0], 'epos': esum, 'npos': nn, 'dt': dt.mean(),
-                          'sdt': np.sqrt(dt.var())}
+                          'sdt': np.sqrt(dt.var()), 'm12': m12, 'm23': m23}
                 self.data_sel.append(record)  # we select this event......
 
     def fit_dt_model(self, **kwargs):
