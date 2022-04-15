@@ -245,7 +245,7 @@ class Na22Analysis(DT5550):
                           'sdt': np.sqrt(dt.var()), 'm12': m12, 'm23': m23}
                 self.data_sel.append(record)  # we select this event......
 
-    def fit_dt_model(self, **kwargs):  
+    def fit_dt_model(self, **kwargs):
         """
         Fit delta time model to the observed distribution
 
@@ -257,7 +257,7 @@ class Na22Analysis(DT5550):
         de_max = maximum energy difference in keV to 2*me for the 2/3 gammas
         toffset = additional time offset correction in ns to let peak coincide with zero (probably due to imperfect
                   timewalk calculations)
-
+ 
         A.P. Colijn / 18-03-2022
         """
 
