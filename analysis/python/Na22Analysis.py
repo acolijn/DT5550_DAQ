@@ -245,7 +245,7 @@ class Na22Analysis(DT5550):
                           'sdt': np.sqrt(dt.var()), 'm12': m12, 'm23': m23}
                 self.data_sel.append(record)  # we select this event......
 
-    def fit_dt_model(self, **kwargs):
+    def fit_dt_model(self, **kwargs):  
         """
         Fit delta time model to the observed distribution
 
