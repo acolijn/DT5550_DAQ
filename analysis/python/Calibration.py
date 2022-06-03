@@ -325,15 +325,19 @@ class Calibration(DT5550):
 
         source = self.config['source']
         self.energy_calibration_point = -1
+        search_range = (0,3000)
         if source == "Co60":
             self.energy_calibration_point = 1332.5  # choose the highest energy gamma for gain calibration
             self.peak_select = 2                    # select teh 2nd highest peak in the spectrum
+            search_range = (0,3000)
         elif source == "Na22":
             self.energy_calibration_point = 511.0
             self.peak_select = 1
+            search_range = (0, 1000)
         elif source == "Cs137":
             self.energy_calibration_point = 661.6
             self.peak_select = 1
+            search_range = (0, 1000)
         else:
             print('calulate_gains:: ERROR wrong source selected: ', source)
 
@@ -342,7 +346,8 @@ class Calibration(DT5550):
 
         de = 100  # guess what the fit range should be.... could be improved
         for idet in range(N_DETECTOR):
-            fit_est = self.estimate_peak_position(idet)
+            fit_est = self.estimate_peak_position(idet, range=search_range)
+            print(idet,' est =',fit_est)
             nbin = int(2*de/self.gain_binwidth)
             self.gain_fit[idet] = self.gauss_fit(self.raw_energy[idet], p0=fit_est, bins=nbin,
                                                  range=(fit_est[0]-de, fit_est[0]+de))

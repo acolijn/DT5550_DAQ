@@ -19,7 +19,7 @@
     "detector_settings": [
         {
             "det_id": 0,
-            "GAIN": 276,
+            "GAIN": 294,
             "THRS": 500,
             "INVERT": 1,
             "BASE": 414,
@@ -34,7 +34,7 @@
         },
         {
             "det_id": 1,
-            "GAIN": 314,
+            "GAIN": 330,
             "THRS": 300,
             "INVERT": 1,
             "BASE": 674,
@@ -49,7 +49,7 @@
         },
         {
             "det_id": 2,
-            "GAIN": 484,
+            "GAIN": 500,
             "THRS": 300,
             "INVERT": 1,
             "BASE": 361,
@@ -64,7 +64,7 @@
         },
         {
             "det_id": 3,
-            "GAIN": 249,
+            "GAIN": 262,
             "THRS": 500,
             "INVERT": 1,
             "BASE": 384,
@@ -79,7 +79,7 @@
         },
         {
             "det_id": 4,
-            "GAIN": 174,
+            "GAIN": 327,
             "THRS": 500,
             "INVERT": 1,
             "BASE": 386,
@@ -94,7 +94,7 @@
         },
         {
             "det_id": 5,
-            "GAIN": 234,
+            "GAIN": 240,
             "THRS": 500,
             "INVERT": 1,
             "BASE": 606,
@@ -109,7 +109,7 @@
         },
         {
             "det_id": 6,
-            "GAIN": 282,
+            "GAIN": 295,
             "THRS": 500,
             "INVERT": 1,
             "BASE": 617,
@@ -124,7 +124,7 @@
         },
         {
             "det_id": 7,
-            "GAIN": 314,
+            "GAIN": 335,
             "THRS": 500,
             "INVERT": 1,
             "BASE": 729,
